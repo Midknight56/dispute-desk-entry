@@ -1,0 +1,94 @@
+{
+  "label": "Recorded run from the sandbox, 23 Oct 2026",
+  "dispute": {
+    "id": "PP-R-PST-10194166",
+    "status": "RESOLVED",
+    "stage": "INQUIRY",
+    "reason": "MERCHANDISE_OR_SERVICE_NOT_RECEIVED",
+    "amount": "6.00",
+    "currency": "USD",
+    "due": null,
+    "custom_id": "dd-0003"
+  },
+  "run": {
+    "disputeId": "PP-R-PST-10194166",
+    "decision": {
+      "verdict": "ACCEPT",
+      "rule": "NO_EVIDENCE_UNDER_LINE",
+      "why": "No delivery record, and $6.00 is under the $10.00 fight line."
+    },
+    "sentences": [
+      {
+        "text": "The buyer did not receive the digital download of the Glaze recipe PDF.",
+        "record_id": "8C207723PC823960E"
+      },
+      {
+        "text": "The payment of $6.00 was made on 2026-10-23.",
+        "record_id": "5VY72827AP063040L"
+      },
+      {
+        "text": "The order was for a digital download with shipping to Toronto, ON, CA.",
+        "record_id": "8C207723PC823960E"
+      }
+    ],
+    "dropped": [],
+    "records": [
+      {
+        "id": "PP-R-PST-10194166",
+        "kind": "dispute",
+        "summary": "Dispute PP-R-PST-10194166: reason MERCHANDISE_OR_SERVICE_NOT_RECEIVED, $6.00, opened 2026-10-23. The buyer wrote: \"The download link in the receipt never worked.\""
+      },
+      {
+        "id": "5VY72827AP063040L",
+        "kind": "capture",
+        "summary": "Payment 5VY72827AP063040L: $6.00 paid on 2026-10-23"
+      },
+      {
+        "id": "8C207723PC823960E",
+        "kind": "order",
+        "summary": "Order 8C207723PC823960E: Glaze recipe PDF, digital download, shipping to Toronto, ON, CA"
+      }
+    ],
+    "steps": [
+      {
+        "tool": "get_dispute",
+        "ref": "PP-R-PST-10194166",
+        "ok": true,
+        "summary": "MERCHANDISE_OR_SERVICE_NOT_RECEIVED, RESOLVED, $6.00",
+        "ms": 538
+      },
+      {
+        "tool": "get_capture",
+        "ref": "5VY72827AP063040L",
+        "ok": true,
+        "summary": "REFUNDED, $6.00",
+        "ms": 406
+      },
+      {
+        "tool": "get_order",
+        "ref": "8C207723PC823960E",
+        "ok": true,
+        "summary": "COMPLETED, Glaze recipe PDF, digital download",
+        "ms": 559
+      },
+      {
+        "tool": "get_invoice",
+        "ref": "",
+        "ok": true,
+        "summary": "no invoice for this sale",
+        "ms": 0
+      }
+    ],
+    "writer": "model",
+    "chosenTools": [
+      "get_order",
+      "get_invoice"
+    ],
+    "usage": {
+      "prompt_tokens": 442,
+      "completion_tokens": 122,
+      "calls": 2
+    }
+  },
+  "neurons": 5.77
+}

@@ -1,0 +1,99 @@
+{
+  "label": "Recorded run from the sandbox, 23 Oct 2026",
+  "dispute": {
+    "id": "PP-R-KNO-10194164",
+    "status": "UNDER_REVIEW",
+    "stage": "CHARGEBACK",
+    "reason": "MERCHANDISE_OR_SERVICE_NOT_RECEIVED",
+    "amount": "48.00",
+    "currency": "USD",
+    "due": null,
+    "custom_id": "dd-0002"
+  },
+  "run": {
+    "disputeId": "PP-R-KNO-10194164",
+    "decision": {
+      "verdict": "FIGHT",
+      "rule": "INR_DELIVERED_BEFORE_CLAIM",
+      "why": "UPS shows it delivered 0 days before the claim."
+    },
+    "sentences": [
+      {
+        "text": "The buyer made a payment of $48.00 on October 23, 2026.",
+        "record_id": "26464732MF568821B"
+      },
+      {
+        "text": "The order was shipped to Toronto, ON, CA on October 23, 2026.",
+        "record_id": "1XT87364LG013733H"
+      },
+      {
+        "text": "UPS marked the package as delivered on October 23, 2026.",
+        "record_id": "26464732MF568821B-1Z999AA10123456784"
+      }
+    ],
+    "dropped": [],
+    "records": [
+      {
+        "id": "PP-R-KNO-10194164",
+        "kind": "dispute",
+        "summary": "Dispute PP-R-KNO-10194164: reason MERCHANDISE_OR_SERVICE_NOT_RECEIVED, $48.00, opened 2026-10-23. The buyer wrote: \"I wrote to the seller twice and the mugs still have not come.\""
+      },
+      {
+        "id": "26464732MF568821B",
+        "kind": "capture",
+        "summary": "Payment 26464732MF568821B: $48.00 paid on 2026-10-23"
+      },
+      {
+        "id": "1XT87364LG013733H",
+        "kind": "order",
+        "summary": "Order 1XT87364LG013733H: Hand thrown mug, set of two, shipping to Toronto, ON, CA"
+      },
+      {
+        "id": "26464732MF568821B-1Z999AA10123456784",
+        "kind": "tracking",
+        "summary": "Tracking 26464732MF568821B-1Z999AA10123456784: UPS number 1Z999AA10123456784, status DELIVERED, marked delivered 2026-10-23T01:47:08Z"
+      }
+    ],
+    "steps": [
+      {
+        "tool": "get_dispute",
+        "ref": "PP-R-KNO-10194164",
+        "ok": true,
+        "summary": "MERCHANDISE_OR_SERVICE_NOT_RECEIVED, UNDER_REVIEW, $48.00",
+        "ms": 1151
+      },
+      {
+        "tool": "get_capture",
+        "ref": "26464732MF568821B",
+        "ok": true,
+        "summary": "PENDING, $48.00",
+        "ms": 435
+      },
+      {
+        "tool": "get_order",
+        "ref": "1XT87364LG013733H",
+        "ok": true,
+        "summary": "COMPLETED, Hand thrown mug, set of two",
+        "ms": 377
+      },
+      {
+        "tool": "get_tracking",
+        "ref": "26464732MF568821B-1Z999AA10123456784",
+        "ok": true,
+        "summary": "UPS DELIVERED",
+        "ms": 502
+      }
+    ],
+    "writer": "model",
+    "chosenTools": [
+      "get_order",
+      "get_tracking"
+    ],
+    "usage": {
+      "prompt_tokens": 512,
+      "completion_tokens": 132,
+      "calls": 2
+    }
+  },
+  "neurons": 6.4
+}

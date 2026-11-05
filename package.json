@@ -1,0 +1,42 @@
+{
+  "name": "dispute-desk",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "dev": "wrangler dev",
+    "deploy": "wrangler deploy",
+    "test": "vitest run",
+    "smoke": "node tools/smoke.mjs",
+    "desk:spec": "node tools/desk_spec.mjs",
+    "check:names": "node tools/no_ai_names.mjs",
+    "typecheck": "tsc --noEmit && tsc --noEmit -p web/tsconfig.json",
+    "web:dev": "vite --config web/vite.config.ts",
+    "web:build": "vite build --config web/vite.config.ts"
+  },
+  "devDependencies": {
+    "@cloudflare/workers-types": "^5.20261023.1",
+    "@types/react": "19.3.0",
+    "@types/react-dom": "19.3.0",
+    "@types/sql.js": "^1.4.11",
+    "@vitejs/plugin-react": "5.2.0",
+    "ag-charts-community": "14.2.0",
+    "ag-charts-react": "14.2.0",
+    "ag-grid-community": "36.2.0",
+    "ag-grid-react": "36.2.0",
+    "ag-studio": "3.0.0",
+    "ag-studio-react": "3.0.0",
+    "playwright": "^1.64.0",
+    "prettier": "^3.9.10",
+    "react": "19.2.8",
+    "react-dom": "19.2.8",
+    "sql.js": "1.14.2",
+    "typescript": "~5.9.3",
+    "vite": "7.3.7",
+    "vitest": "^4.1.12",
+    "wrangler": "^4.152.0"
+  },
+  "dependencies": {
+    "pdf-lib": "1.17.1"
+  }
+}

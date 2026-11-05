@@ -1,0 +1,31 @@
+{
+  "$schema": "node_modules/wrangler/config-schema.json",
+  "name": "dispute-desk",
+  "main": "src/index.ts",
+  "compatibility_date": "2026-10-01",
+  "observability": { "enabled": true },
+  "vars": {
+    "PAYPAL_BASE": "https://api-m.sandbox.paypal.com",
+    "FIGHT_LINE_USD": 10,
+    "OFFER_SHARE": 0.5
+  },
+  // The cached PayPal token: a few writes a day (the Free plan allows 1,000 KV writes a day for the account).
+  "kv_namespaces": [
+    { "binding": "TOKEN", "id": "1c8e6e765c154805b0959b31c4979840" }
+  ],
+  "d1_databases": [
+    // This app's state: disputes, webhook events, the feed, the caps, the judge pool.
+    { "binding": "DB", "database_name": "dispute-desk", "database_id": "ed2b5737-8516-4950-9e40-a8b89899b095" },
+    // The account wide AI ledger shared by the hackathon apps: table ai_calls(app, day, neurons, at). Remote even under
+    // `wrangler dev`, because a dev run spends the same real neurons.
+    { "binding": "LEDGER", "database_name": "hackathon-ledger", "database_id": "023377a8-ad19-413c-b769-d195d05427b3", "remote": true }
+  ],
+  "ai": { "binding": "AI" },
+  // The desk page, built by `npm run web:build`. The API and the webhook run in the Worker first.
+  "assets": {
+    "directory": "public/dist",
+    "binding": "ASSETS",
+    "not_found_handling": "single-page-application",
+    "run_worker_first": ["/api/*", "/webhooks/*", "/health"]
+  }
+}

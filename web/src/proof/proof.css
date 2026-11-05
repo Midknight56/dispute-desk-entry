@@ -1,0 +1,201 @@
+.proof-shell {
+  min-height: 100vh;
+  padding: env(safe-area-inset-top) max(16px, env(safe-area-inset-right)) env(safe-area-inset-bottom)
+    max(16px, env(safe-area-inset-left));
+}
+.proof-topbar {
+  min-height: 56px;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  border-bottom: 1px solid var(--line);
+}
+.proof-topbar a {
+  color: var(--muted);
+  text-decoration: none;
+  font-size: 13px;
+}
+.proof-topbar h1 {
+  margin: 0;
+  font-size: 20px;
+}
+.proof-main {
+  max-width: 1100px;
+  margin: 0 auto;
+  padding: 16px 0 24px;
+  display: grid;
+  gap: 16px;
+}
+.proof-part {
+  min-width: 0;
+  padding: 16px;
+  background: var(--surface);
+  border: 1px solid var(--line);
+  border-radius: 8px;
+}
+.proof-part h2 {
+  margin: 0 0 8px;
+  font-size: 16px;
+}
+.proof-count {
+  margin: 0 0 12px;
+  font-size: clamp(22px, 6vw, 30px);
+  font-weight: 700;
+  overflow-wrap: anywhere;
+}
+.proof-table {
+  width: 100%;
+}
+.proof-row {
+  display: grid;
+  grid-template-columns: minmax(0, 1.1fr) minmax(0, 1fr) minmax(0, 0.8fr) minmax(0, 1.2fr);
+  gap: 12px;
+  padding: 8px 0;
+  border-top: 1px solid var(--line);
+  min-width: 0;
+}
+.proof-row span {
+  min-width: 0;
+  overflow-wrap: anywhere;
+}
+.proof-head {
+  color: var(--muted);
+  font-size: 12px;
+  font-weight: 650;
+}
+.proof-part small {
+  display: block;
+  margin-top: 12px;
+  color: var(--muted);
+  font-size: 11px;
+  overflow-wrap: anywhere;
+}
+.proof-records {
+  padding: 0;
+  margin: 0;
+  list-style: none;
+  display: grid;
+  gap: 12px;
+}
+.proof-records li {
+  display: grid;
+  grid-template-columns: minmax(62px, auto) minmax(0, 1fr);
+  gap: 12px;
+  padding-top: 8px;
+  border-top: 1px solid var(--line);
+  overflow-wrap: anywhere;
+}
+.proof-records code {
+  color: var(--muted);
+  overflow-wrap: anywhere;
+}
+.proof-form {
+  display: grid;
+  gap: 12px;
+}
+.proof-form label {
+  font-size: 13px;
+}
+.proof-form textarea,
+.proof-form select {
+  width: 100%;
+  min-width: 0;
+  min-height: 44px;
+  padding: 10px;
+  border: 1px solid var(--line);
+  border-radius: 6px;
+  background: var(--bg);
+  color: var(--text);
+  font: inherit;
+  font-size: 16px;
+}
+.proof-form textarea {
+  min-height: 90px;
+  resize: vertical;
+}
+.proof-button {
+  width: 100%;
+  min-height: 44px;
+  background: var(--accent);
+  border-color: var(--accent);
+  color: var(--accentText);
+}
+.proof-result {
+  display: grid;
+  gap: 6px;
+  margin: 12px 0 0;
+  overflow-wrap: anywhere;
+}
+.proof-result.kept {
+  color: var(--ok);
+}
+.proof-result.struck,
+.proof-error {
+  color: var(--danger);
+}
+@media (max-width: 600px) {
+  .proof-main {
+    gap: 12px;
+  }
+  .proof-part {
+    padding: 12px;
+  }
+  .proof-head {
+    display: none;
+  }
+  .proof-row {
+    display: block;
+    margin-top: 8px;
+    padding: 8px;
+    border: 1px solid var(--line);
+    border-radius: 6px;
+  }
+  .proof-row span {
+    padding: 0;
+  }
+  .proof-verdict-row .proof-row-label {
+    display: block;
+    margin-bottom: 4px;
+    font-weight: 650;
+  }
+  .proof-verdict-plan,
+  .proof-verdict-code {
+    display: inline;
+    white-space: nowrap;
+  }
+  .proof-verdict-plan::before {
+    content: 'Plan ';
+  }
+  .proof-verdict-code::before {
+    content: ', Code ';
+  }
+  .proof-verdict-rule {
+    display: block;
+    margin-top: 4px;
+    font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+    font-size: 11px;
+    overflow-wrap: normal;
+    word-break: normal;
+  }
+  .proof-row:not(.proof-verdict-row) span {
+    display: block;
+    margin-top: 4px;
+  }
+  .proof-row:not(.proof-verdict-row) .proof-row-label {
+    margin-top: 0;
+    margin-bottom: 4px;
+    font-weight: 650;
+  }
+  .proof-check-sentence::before {
+    content: 'Sentence: ';
+    color: var(--muted);
+  }
+  .proof-check-result::before {
+    content: 'Result: ';
+    color: var(--muted);
+  }
+  .proof-check-reason::before {
+    content: 'Reason: ';
+    color: var(--muted);
+  }
+}

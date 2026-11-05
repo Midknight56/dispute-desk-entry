@@ -1,0 +1,5 @@
+{
+  "printWidth": 120,
+  "singleQuote": true,
+  "overrides": [{ "files": ["src/**", "tests/*.test.ts"], "excludeFiles": ["tests/web_*.test.ts"], "options": { "singleQuote": false } }]
+}

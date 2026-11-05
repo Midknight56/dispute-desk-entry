@@ -1,0 +1,260 @@
+@import '../app.css';
+
+.studio-shell {
+  min-height: 100vh;
+  padding: env(safe-area-inset-top) max(16px, env(safe-area-inset-right)) env(safe-area-inset-bottom)
+    max(16px, env(safe-area-inset-left));
+  color: var(--text);
+  background: var(--bg);
+}
+
+.studio-topbar {
+  min-height: 64px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  border-bottom: 1px solid var(--line);
+}
+
+.studio-topbar a,
+.studio-topbar span {
+  color: var(--text);
+  font-size: 20px;
+  font-weight: 650;
+  text-decoration: none;
+}
+
+.studio-ask {
+  max-width: 1600px;
+  margin: 16px auto 12px;
+  padding: 16px;
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  background: var(--surface);
+}
+
+.studio-ask label {
+  display: block;
+  margin-bottom: 8px;
+  font-weight: 600;
+}
+
+.studio-ask form > div {
+  display: flex;
+  gap: 12px;
+}
+
+.studio-ask input {
+  min-width: 0;
+  flex: 1;
+  padding: 8px;
+  border: 1px solid var(--line);
+  border-radius: 6px;
+  color: var(--text);
+  background: var(--bg);
+  font: inherit;
+}
+
+.studio-ask button {
+  padding: 8px;
+  color: var(--accentText);
+  background: var(--accent);
+}
+
+.studio-ask p {
+  margin: 8px 0 0;
+  color: var(--warn);
+}
+
+.studio-canvas {
+  height: calc(100vh - 166px);
+  min-height: 600px;
+  max-width: 1600px;
+  margin: 0 auto;
+  overflow: hidden;
+}
+
+.studio-canvas > * {
+  width: 100%;
+  height: 100%;
+}
+
+.studio-evidence {
+  max-width: 100%;
+  overflow: auto;
+}
+
+.studio-evidence-head,
+.studio-evidence-row {
+  display: grid;
+  grid-template-columns: minmax(80px, 1.5fr) repeat(4, minmax(48px, 1fr));
+  align-items: center;
+  gap: 8px;
+  min-width: 360px;
+  padding: 8px;
+  border-bottom: 1px solid var(--line);
+}
+
+.studio-evidence-head {
+  color: var(--muted);
+  font-size: 12px;
+}
+
+.studio-mark {
+  text-align: center;
+  color: var(--muted);
+}
+
+.studio-mark.is-ready {
+  color: var(--ok);
+  font-weight: 700;
+}
+
+.studio-deadline {
+  display: flex;
+  height: 100%;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+}
+
+.studio-deadline svg {
+  width: min(150px, 70%);
+  overflow: visible;
+}
+
+.studio-deadline text {
+  fill: var(--text);
+  font:
+    600 22px system-ui,
+    sans-serif;
+}
+
+.studio-draft {
+  height: 100%;
+  overflow: auto;
+  padding: 8px;
+}
+
+.studio-draft-title {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 8px;
+  border-bottom: 1px solid var(--line);
+}
+
+.studio-draft-title span {
+  color: var(--muted);
+}
+
+.studio-draft-lines {
+  display: grid;
+  gap: 12px;
+  padding-top: 12px;
+}
+
+.studio-draft-line {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  gap: 8px;
+  padding: 8px;
+  border: 1px solid var(--line);
+  border-radius: 6px;
+}
+
+.studio-draft-chip {
+  padding: 2px 6px;
+  border: 1px solid var(--line);
+  border-radius: 999px;
+  color: var(--muted);
+  font-size: 12px;
+}
+
+.studio-draft-reason {
+  color: var(--muted);
+  font-size: 12px;
+}
+
+.studio-draft > p {
+  margin: 0;
+  padding: 8px;
+  color: var(--muted);
+}
+
+@media (max-width: 600px) {
+  .studio-canvas {
+    height: calc(100vh - 190px);
+    min-height: 520px;
+  }
+
+  .studio-ask form > div {
+    flex-wrap: wrap;
+  }
+
+  .studio-ask button {
+    flex: 0 0 auto;
+  }
+}
+
+.studio-tracking {
+  height: 100%;
+  overflow: auto;
+}
+
+.studio-tracking-row {
+  display: grid;
+  grid-template-columns: 12px 72px 1fr auto auto auto;
+  align-items: center;
+  gap: 12px;
+  min-height: 44px;
+  padding: 8px 12px;
+  border-bottom: 1px solid var(--line);
+}
+
+.tracking-dot {
+  width: 12px;
+  height: 12px;
+  border-radius: 50%;
+  background: var(--line);
+}
+
+.tracking-late .tracking-dot {
+  background: var(--warn);
+}
+
+.tracking-on_paypal .tracking-dot {
+  background: var(--ok);
+}
+
+.tracking-age {
+  color: var(--muted);
+}
+
+.tracking-late .tracking-state {
+  color: var(--warn);
+  font-weight: 600;
+}
+
+.tracking-on_paypal .tracking-state {
+  color: var(--ok);
+  font-weight: 600;
+}
+
+.studio-tracking-row button {
+  grid-column: 6;
+  padding: 8px 12px;
+  border: 0;
+  border-radius: 6px;
+  color: var(--accentText);
+  background: var(--accent);
+  font: inherit;
+  cursor: pointer;
+}
+
+.studio-tracking-row button:focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: 2px;
+}

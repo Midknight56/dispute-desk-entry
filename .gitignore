@@ -1,0 +1,14 @@
+node_modules/
+.wrangler/
+.dev.vars
+.dev.vars.*
+*.local.txt
+*.local.json
+dist/
+public/dist/
+coverage/
+tools/__pycache__/
+tools/out/
+*.log
+.env
+.work/
