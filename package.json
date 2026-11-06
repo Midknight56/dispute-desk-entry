@@ -5,11 +5,12 @@
   "type": "module",
   "scripts": {
     "dev": "wrangler dev",
-    "deploy": "wrangler deploy",
+    "deploy": "node tools/model_check.mjs && wrangler deploy",
     "test": "vitest run",
     "smoke": "node tools/smoke.mjs",
     "desk:spec": "node tools/desk_spec.mjs",
     "check:names": "node tools/no_ai_names.mjs",
+    "check:model": "node tools/model_check.mjs",
     "typecheck": "tsc --noEmit && tsc --noEmit -p web/tsconfig.json",
     "web:dev": "vite --config web/vite.config.ts",
     "web:build": "vite build --config web/vite.config.ts"

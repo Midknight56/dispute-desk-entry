@@ -317,7 +317,7 @@ describe("job 13 neuron reservations", () => {
       action === "ask" ? { q: "show status" } : undefined,
     );
     expect(response.status).toBe(200);
-    expect((await ledger(env)).map((row) => row.neurons)).toEqual([action === "ask" ? 0.47 : 1.39]);
+    expect((await ledger(env)).map((row) => row.neurons)).toEqual([action === "ask" ? 0.16 : 0.47]);
   });
 
   it("also reserves the shared account allowance atomically", async () => {

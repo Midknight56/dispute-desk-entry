@@ -60,19 +60,19 @@ export function boundMessages(messages: ModelMessage[], kind: CallKind): ModelMe
   return bounded;
 }
 
-// Per call: ceil(((characters + 64) * 4625 + maxTokens * 30475) / 1M, to 0.01).
+// Per call: ceil(((characters + 64) * 1542 + maxTokens * 10158) / 1M, to 0.01).
 const callMax = (kind: CallKind) =>
   neuronsFor({
     prompt_tokens: MODEL_BOUNDS[kind].characters + CHAT_TEMPLATE_TOKENS,
     completion_tokens: MODEL_BOUNDS[kind].maxTokens,
   });
 // Analyse: neuronsFor(1600, 64) + neuronsFor(3136, 64) + neuronsFor(4160, 64)
-// = 9.36 + 16.46 + 21.20 = 47.02 neurons, including one writer retry.
+// = 3.12 + 5.49 + 7.07 = 15.68 neurons, including one writer retry.
 export const NEURONS_PER_RUN_MAX =
   Math.round((callMax("toolChoice") + callMax("writer") + callMax("writerRetry")) * 100) / 100;
-// Ask: neuronsFor(704, 128) = 7.16 neurons.
+// Ask: neuronsFor(704, 128) = 2.39 neurons.
 export const NEURONS_PER_ASK_MAX = callMax("ask");
-// Free visitor cost: $0. App day <= 700; account day <= 9,000 < the free 10,000 neurons/day.
+// Free visitor cost: $0. App day 700 neurons = at most 44 analyse runs at 15.68; account day 9,000 < free 10,000.
 
 export interface CapUsage {
   visitorRuns: number;
@@ -116,9 +116,9 @@ export function checkCaps(u: CapUsage, estimate = NEURONS_PER_RUN_ESTIMATE): Cap
   return { ok: true };
 }
 
-// Rates for @cf/meta/llama-3.2-3b-instruct, Cloudflare Workers AI pricing page; checked again when the number is measured.
+// Rates for @cf/ibm-granite/granite-4.0-h-micro, Cloudflare Workers AI pricing page, read 2026-11-06.
 export function neuronsFor(usage: { prompt_tokens?: number; completion_tokens?: number }): number {
   const input = usage.prompt_tokens ?? 0;
   const output = usage.completion_tokens ?? 0;
-  return Math.ceil(((input * 4_625 + output * 30_475) / 1_000_000) * 100) / 100;
+  return Math.ceil(((input * 1_542 + output * 10_158) / 1_000_000) * 100) / 100;
 }

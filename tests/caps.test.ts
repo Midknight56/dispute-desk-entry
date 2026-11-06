@@ -2,6 +2,8 @@ import { describe, expect, it } from "vitest";
 import {
   ACCOUNT_NEURONS_PER_DAY,
   APP_NEURONS_PER_DAY,
+  NEURONS_PER_RUN_MAX,
+  NEURONS_PER_ASK_MAX,
   NEURONS_PER_RUN_ESTIMATE as E,
   checkCaps,
   neuronsFor,
@@ -54,7 +56,14 @@ describe("checkCaps", () => {
   });
 
   it("calculates neurons at the published input and output rates", () => {
-    expect(neuronsFor({ prompt_tokens: 1_000_000, completion_tokens: 0 })).toBe(4_625);
-    expect(neuronsFor({ prompt_tokens: 1_000, completion_tokens: 200 })).toBe(10.72);
+    expect(neuronsFor({ prompt_tokens: 1_000_000, completion_tokens: 0 })).toBe(1_542);
+    expect(neuronsFor({ prompt_tokens: 1_000, completion_tokens: 200 })).toBe(3.58);
+    expect(neuronsFor({ prompt_tokens: 82, completion_tokens: 12 })).toBe(0.25);
+    expect(neuronsFor({ prompt_tokens: 1_600, completion_tokens: 64 })).toBe(3.12);
+    expect(neuronsFor({ prompt_tokens: 3_136, completion_tokens: 64 })).toBe(5.49);
+    expect(neuronsFor({ prompt_tokens: 4_160, completion_tokens: 64 })).toBe(7.07);
+    expect(NEURONS_PER_RUN_MAX).toBe(15.68);
+    expect(neuronsFor({ prompt_tokens: 704, completion_tokens: 128 })).toBe(2.39);
+    expect(NEURONS_PER_ASK_MAX).toBe(2.39);
   });
 });

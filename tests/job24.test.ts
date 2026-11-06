@@ -1,5 +1,5 @@
 import { afterEach, describe, expect, it, vi } from "vitest";
-import worker from "../src/index";
+import worker, { workersAi } from "../src/index";
 import { runAgent } from "../src/agent";
 import {
   boundMessages,
@@ -54,6 +54,27 @@ afterEach(() => {
 });
 
 describe("job 24 bounded model spending", () => {
+  it("reads Granite chat completions and the legacy response shape", async () => {
+    const { env } = await makeEnv();
+    const accounting = { uncertain: false };
+    env.AI.run = vi.fn()
+      .mockResolvedValueOnce({
+        id: "chatcmpl-test",
+        object: "chat.completion",
+        choices: [{ index: 0, message: { role: "assistant", content: '{"facts": ["F1", "F3"]}' }, finish_reason: "stop" }],
+        usage: { prompt_tokens: 82, completion_tokens: 12, total_tokens: 94, neurons: 0.24831607937812805 },
+      })
+      .mockResolvedValueOnce({ response: "legacy reply", usage: { prompt_tokens: 8, completion_tokens: 3 } });
+    const model = workersAi(env, accounting);
+    const messages: ModelMessage[] = [{ role: "user", content: "write" }];
+    await expect(model(messages, "writer")).resolves.toEqual({
+      text: '{"facts": ["F1", "F3"]}',
+      usage: { prompt_tokens: 82, completion_tokens: 12, total_tokens: 94, neurons: 0.24831607937812805 },
+    });
+    await expect(model(messages, "writer")).resolves.toMatchObject({ text: "legacy reply" });
+    expect(accounting.uncertain).toBe(false);
+  });
+
   it("computes both route maxima from every call bound", () => {
     const max = (kind: CallKind) =>
       neuronsFor({
@@ -63,7 +84,7 @@ describe("job 24 bounded model spending", () => {
     expect(CHAT_TEMPLATE_TOKENS).toBe(64);
     expect(NEURONS_PER_RUN_MAX).toBeCloseTo(max("toolChoice") + max("writer") + max("writerRetry"), 10);
     expect(NEURONS_PER_ASK_MAX).toBe(max("ask"));
-    expect(NEURONS_PER_ASK_MAX).toBeGreaterThan(7);
+    expect(NEURONS_PER_ASK_MAX).toBe(2.39);
   });
 
   it.each(Object.keys(MODEL_BOUNDS) as CallKind[])("cuts %s records while preserving all system rules", (kind) => {
@@ -113,10 +134,10 @@ describe("job 24 bounded model spending", () => {
     expect(calls[2].messages.at(-1)?.content).toContain("(more records left out)");
   });
 
-  it("refuses an ask at 693 neurons before the model can spend", async () => {
+  it("refuses an ask at 698 neurons before the model can spend", async () => {
     const { env, replies } = await makeEnv();
     await env.LEDGER.prepare("INSERT INTO ai_calls(app,day,neurons,at) VALUES(?,?,?,?)")
-      .bind("dispute-desk", utcDay(), 693, "seed")
+      .bind("dispute-desk", utcDay(), 698, "seed")
       .run();
     replies.push({ response: "{}", usage: { prompt_tokens: 500, completion_tokens: 400 } });
     const model = vi.spyOn(env.AI, "run");
@@ -124,7 +145,7 @@ describe("job 24 bounded model spending", () => {
     expect(response.status).toBe(200);
     expect(await response.json()).toMatchObject({ by: "words", neurons: 0 });
     expect(model).not.toHaveBeenCalled();
-    expect((await ledger(env)).map((r) => r.neurons)).toEqual([693]);
+    expect((await ledger(env)).map((r) => r.neurons)).toEqual([698]);
   });
 
   it("reserves three calls then settles the same row to their measured sum", async () => {

@@ -14,7 +14,7 @@ import {
 import { codeFactSentences, supportedSentence, summaryFacts, type RecordFacts } from "./sentence-facts";
 export { dropUnbacked };
 
-export const MODEL = "@cf/meta/llama-3.2-3b-instruct"; // the same free tier model as midknight-llm-proxy
+export const MODEL = "@cf/ibm-granite/granite-4.0-h-micro"; // Workers AI model with no deprecation date, read 2026-11-06
 
 export type RecordKind = "dispute" | "capture" | "order" | "tracking" | "invoice";
 export interface EvidenceRecord {

@@ -165,7 +165,7 @@ describe("job 28 typed fact selection", () => {
   it("reserves only 64 writer output tokens and keeps exact worst case arithmetic", () => {
     expect(MODEL_BOUNDS.writer.maxTokens).toBe(64);
     expect(MODEL_BOUNDS.writerRetry.maxTokens).toBe(64);
-    expect(NEURONS_PER_RUN_MAX).toBe(47.02);
+    expect(NEURONS_PER_RUN_MAX).toBe(15.68);
   });
 });
 

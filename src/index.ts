@@ -118,7 +118,7 @@ async function processEvent(env: Env, ev: PayPalEvent) {
   }
 }
 
-function workersAi(env: Env, accounting: { uncertain: boolean }): ModelFn {
+export function workersAi(env: Env, accounting: { uncertain: boolean }): ModelFn {
   return async (messages, kind) => {
     try {
       const r: any = await env.AI.run(MODEL as any, {
@@ -131,7 +131,12 @@ function workersAi(env: Env, accounting: { uncertain: boolean }): ModelFn {
       );
       if (!known) accounting.uncertain = true;
       return {
-        text: typeof r?.response === "string" ? r.response : JSON.stringify(r?.response ?? ""),
+        text:
+          typeof r?.choices?.[0]?.message?.content === "string"
+            ? r.choices[0].message.content
+            : typeof r?.response === "string"
+              ? r.response
+              : JSON.stringify(r?.response ?? ""),
         usage: known ? r.usage : undefined,
       };
     } catch (error) {
@@ -518,12 +523,12 @@ async function ask(req: Request, env: Env): Promise<Response> {
   if (!q.trim()) return Response.json({ error: "ask a question" }, { status: 400 });
   const day = utcDay();
   const visitor = await visitorId(req);
-  let cap = checkCaps(await readUsage(env.DB, env.LEDGER, visitor, day));
+  let cap = checkCaps(await readUsage(env.DB, env.LEDGER, visitor, day), NEURONS_PER_ASK_MAX);
   const reservation = cap.ok ? await reserveRun(env.DB, { day, visitor, disputeId: "ask" }) : null;
-  if (cap.ok && !reservation) cap = checkCaps(await readUsage(env.DB, env.LEDGER, visitor, day));
+  if (cap.ok && !reservation) cap = checkCaps(await readUsage(env.DB, env.LEDGER, visitor, day), NEURONS_PER_ASK_MAX);
   const neuronReservationId = cap.ok && reservation ? await reserveNeurons(env.LEDGER, day, "ask") : null;
   const budget = neuronReservationId !== null;
-  if (cap.ok && !budget) cap = checkCaps(await readUsage(env.DB, env.LEDGER, visitor, day));
+  if (cap.ok && !budget) cap = checkCaps(await readUsage(env.DB, env.LEDGER, visitor, day), NEURONS_PER_ASK_MAX);
   const accounting = { uncertain: false };
   let spec;
   let by: "model" | "words" = "words";

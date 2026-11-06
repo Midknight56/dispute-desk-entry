@@ -59,7 +59,7 @@ section per record, and a check value on every page (`/api/disputes/{id}/pack.pd
 | PayPal Disputes | Reading the case and filing: `provide-evidence`, `accept-claim`, `make-offer` |
 | PayPal Webhooks | Dispute and capture events, verified before anything is stored |
 | Cloudflare Workers, D1 | The page, the API, disputes, events, the feed and the caps |
-| Workers AI (`@cf/meta/llama-3.2-3b-instruct`) | Choosing records and writing sentences |
+| Workers AI (`@cf/ibm-granite/granite-4.0-h-micro`) | Choosing records and writing sentences |
 | AG Grid, AG Charts | The disputes grid, the evidence column, and charts asked for in words |
 | AG Studio 3.0 | The `/studio` dashboard: KPIs, the grid, charts, custom widgets (evidence readiness, a deadline ring, tracking on PayPal, and a checked draft) and its AI Assistant panel |
 
@@ -75,8 +75,7 @@ so. If a webhook is lost, the next load of the list (at most every 15 minutes) s
 
 ## What it costs
 
-Nothing. One analysis is 2 model calls, measured at 512 input and 132 output tokens: 6.4 neurons at Cloudflare's
-published rates. The caps in `src/caps.ts` are 20 runs per visitor a day, 100 runs a day, 700 neurons a day for this
+Nothing. One analysis uses at most 3 model calls: a tool choice, a fact pick, and one retry of the pick. Before the calls, the desk reserves the worst case, 15.68 neurons at Cloudflare's published rates for `@cf/ibm-granite/granite-4.0-h-micro` (1,542 neurons per million input tokens, 10,158 per million output tokens), then keeps only what was really used. The caps in `src/caps.ts` are 20 runs per visitor a day, 100 runs a day, 700 neurons a day for this
 app (7 percent of the free 10,000), and a stop at 9,000 for the whole account. Past a cap, fixed wording is written
 from the same records and the page says so. The account is on the Free plan, which has no paid overage.
 
