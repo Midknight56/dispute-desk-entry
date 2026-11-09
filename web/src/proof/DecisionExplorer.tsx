@@ -7,12 +7,55 @@ export interface ScenarioSide {
   changeIf: string;
   missing: string[];
   sentences: string[];
+  lines?: ScenarioLine[];
+}
+
+export interface ScenarioLine {
+  text: string;
+  recordId: string;
+  recordKind: string;
+  recordSummary: string;
 }
 
 export interface ScenarioComparison {
   original: ScenarioSide;
   changed: ScenarioSide;
   changedField: string;
+  lineDiff?: { kept: ScenarioLine[]; added: ScenarioLine[]; removed: ScenarioLine[] };
+  explain?: string;
+}
+
+function DiffList({ comparison }: { comparison: ScenarioComparison }) {
+  const diff = comparison.lineDiff;
+  if (!diff) return null;
+  const rows: { tag: 'Kept' | 'Removed' | 'Added'; line: ScenarioLine }[] = [
+    ...diff.removed.map((line) => ({ tag: 'Removed' as const, line })),
+    ...diff.added.map((line) => ({ tag: 'Added' as const, line })),
+    ...diff.kept.map((line) => ({ tag: 'Kept' as const, line })),
+  ];
+  return (
+    <div className="decision-diff" aria-live="polite">
+      <h3>What changed in the draft</h3>
+      {comparison.explain && <p className="decision-explain">{comparison.explain}</p>}
+      <ul className="decision-diff-list">
+        {rows.map(({ tag, line }, idx) => (
+          <li key={idx} className={`diff-${tag.toLowerCase()}`}>
+            <span className={`diff-tag ${tag.toLowerCase()}`}>{tag}</span>
+            <span className="diff-text">{line.text}</span>
+            <span className="diff-source">from {line.recordSummary}</span>
+          </li>
+        ))}
+      </ul>
+    </div>
+  );
+}
+
+function lineClass(side: 'original' | 'changed', text: string, comparison: ScenarioComparison): string | undefined {
+  const diff = comparison.lineDiff;
+  if (!diff) return undefined;
+  if (side === 'original' && diff.removed.some((l) => l.text === text)) return 'line-removed';
+  if (side === 'changed' && diff.added.some((l) => l.text === text)) return 'line-added';
+  return undefined;
 }
 
 export interface DecisionExplorerProps {
@@ -205,7 +248,7 @@ export default function DecisionExplorer(props: DecisionExplorerProps) {
             ) : (
               <ul className="decision-sentences">
                 {comparison.original.sentences.map((sentence, idx) => (
-                  <li key={idx}>{sentence}</li>
+                  <li key={idx} className={lineClass('original', sentence, comparison)}>{sentence}</li>
                 ))}
               </ul>
             )}
@@ -235,13 +278,14 @@ export default function DecisionExplorer(props: DecisionExplorerProps) {
             ) : (
               <ul className="decision-sentences">
                 {comparison.changed.sentences.map((sentence, idx) => (
-                  <li key={idx}>{sentence}</li>
+                  <li key={idx} className={lineClass('changed', sentence, comparison)}>{sentence}</li>
                 ))}
               </ul>
             )}
           </div>
         </div>
       </div>
+      <DiffList comparison={comparison} />
     </section>
   );
 }

@@ -62,12 +62,28 @@ export interface ScenarioSide {
   changeIf: string;
   missing: string[];
   sentences: string[];
+  lines: ScenarioLine[];
+}
+
+export interface ScenarioLine {
+  text: string;
+  recordId: string;
+  recordKind: string;
+  recordSummary: string;
+}
+
+export interface LineDiff {
+  kept: ScenarioLine[];
+  added: ScenarioLine[];
+  removed: ScenarioLine[];
 }
 
 export interface ScenarioComparison {
   original: ScenarioSide;
   changed: ScenarioSide;
   changedField: string;
+  lineDiff: LineDiff;
+  explain: string;
 }
 
 export interface ScenarioChange {
@@ -205,15 +221,107 @@ export function recordsForFacts(facts: CaseFacts): EvidenceRecord[] {
 export function evaluateSide(facts: CaseFacts): ScenarioSide {
   const d = decide(facts);
   const records = recordsForFacts(facts);
-  const sentences = templateSentences(d, records).map((s) => s.text);
+  const lines: ScenarioLine[] = templateSentences(d, records).map((s) => {
+    const record = records.find((r) => r.id === s.record_id);
+    return {
+      text: s.text,
+      recordId: s.record_id,
+      recordKind: record?.kind ?? "unknown",
+      recordSummary: record?.summary ?? s.record_id,
+    };
+  });
   return {
     verdict: d.verdict,
     rule: d.rule,
     why: d.why,
     changeIf: d.changeIf,
     missing: d.missing,
-    sentences,
+    sentences: lines.map((l) => l.text),
+    lines,
   };
+}
+
+export function diffLines(original: ScenarioLine[], changed: ScenarioLine[]): LineDiff {
+  const after = new Set(changed.map((l) => l.text));
+  const before = new Set(original.map((l) => l.text));
+  return {
+    kept: original.filter((l) => after.has(l.text)),
+    removed: original.filter((l) => !after.has(l.text)),
+    added: changed.filter((l) => !before.has(l.text)),
+  };
+}
+
+const KIND_WORD: Record<string, string> = {
+  tracking: "shipping",
+  capture: "payment",
+  order: "order",
+  dispute: "claim",
+};
+const RECORD_WORD: Record<string, string> = {
+  tracking: "shipping record",
+  capture: "payment record",
+  order: "order record",
+  dispute: "dispute record",
+};
+
+function countByKind(lines: ScenarioLine[]): string {
+  const counts = new Map<string, number>();
+  for (const line of lines) counts.set(line.recordKind, (counts.get(line.recordKind) ?? 0) + 1);
+  const parts = [...counts].map(([kind, n]) => `${n} ${KIND_WORD[kind] ?? kind} ${n === 1 ? "line" : "lines"}`);
+  return parts.length <= 1 ? parts.join("") : `${parts.slice(0, -1).join(", ")} and ${parts[parts.length - 1]}`;
+}
+
+function causeSentence(change: ScenarioChange, facts: CaseFacts): string {
+  switch (change.field) {
+    case "trackingRead":
+      return change.value === "failed" ? "The shipping record could not be read." : "The shipping record was read.";
+    case "orderRead":
+      return change.value === "failed" ? "The order could not be read." : "The order was read.";
+    case "deliveredAt": {
+      if (!change.value) return "The shipping record now has no delivery date.";
+      const at = new Date(String(change.value)).getTime();
+      const claim = new Date(facts.claimAt).getTime();
+      return at > claim ? "The delivery date is now after the claim." : "The delivery date is now before the claim.";
+    }
+    case "amount":
+      return `The amount is now ${formatMoney(facts.amount, facts.currency)}.`;
+    default:
+      return `The ${change.field} changed.`;
+  }
+}
+
+export function explainChange(
+  change: ScenarioChange,
+  changedFacts: CaseFacts,
+  original: ScenarioSide,
+  changed: ScenarioSide,
+  diff: LineDiff,
+): string {
+  const out = [causeSentence(change, changedFacts)];
+  if (original.verdict !== changed.verdict) {
+    out.push(`The verdict moves from ${original.verdict} to ${changed.verdict}.`);
+  }
+  if (changed.verdict === "REVIEW") out.push("Nothing will be filed.");
+  if (diff.removed.length === 0 && diff.added.length === 0) {
+    out.push("The draft lines did not change.");
+    return out.join(" ");
+  }
+  if (diff.removed.length) {
+    out.push(`${countByKind(diff.removed)} left the draft.`.replace(/^./, (c) => c.toUpperCase()));
+  }
+  if (diff.added.length) {
+    const n = diff.added.length;
+    out.push(`${countByKind(diff.added)} ${n === 1 ? "was" : "were"} added.`.replace(/^./, (c) => c.toUpperCase()));
+  }
+  const keptRecords = [...new Map(diff.kept.map((l) => [l.recordId, l])).values()];
+  for (const line of keptRecords) {
+    const n = diff.kept.filter((l) => l.recordId === line.recordId).length;
+    const word = KIND_WORD[line.recordKind] ?? line.recordKind;
+    out.push(
+      `The ${word} ${n === 1 ? "line stays: it comes" : "lines stay: they come"} from ${RECORD_WORD[line.recordKind] ?? "record"} ${line.recordId}.`,
+    );
+  }
+  return out.join(" ");
 }
 
 export function compareScenario(fixtureId: string, change: ScenarioChange): ScenarioComparison {
@@ -227,10 +335,15 @@ export function compareScenario(fixtureId: string, change: ScenarioChange): Scen
   const changedFacts = getFixtureFacts(fixtureId);
   applyChange(changedFacts, change);
 
+  const original = evaluateSide(originalFacts);
+  const changed = evaluateSide(changedFacts);
+  const lineDiff = diffLines(original.lines, changed.lines);
   return {
-    original: evaluateSide(originalFacts),
-    changed: evaluateSide(changedFacts),
+    original,
+    changed,
     changedField: change.field,
+    lineDiff,
+    explain: explainChange(change, changedFacts, original, changed, lineDiff),
   };
 }
 

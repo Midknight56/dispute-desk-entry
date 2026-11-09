@@ -10,7 +10,7 @@ import { store } from "./store";
 import { finishRun, readUsage, recordRun, reserveRun, reserveNeurons, utcDay, visitorId } from "./usage";
 import { handleWebhook, type PayPalEvent } from "./webhooks";
 import { needsSync } from "./sync";
-import { nextForJudge, poolCounts, checkActionable, type CaseKind } from "./judge";
+import { nextForJudge, poolCounts, checkActionable, verifyFree, type CaseKind, type DisputeCheck } from "./judge";
 import { replayDraft, replayById } from "./replay";
 import { checkSentence, runProof } from "./proof";
 import { compareScenario, scenarioOptions } from "./scenario";
@@ -26,6 +26,19 @@ export interface Env extends PayPalEnv {
   DESK_OWNER_KEY?: string;
   SESSION_SECRET?: string;
   ASSETS: Fetcher;
+}
+
+function judgeCheck(env: Env, kind: CaseKind): DisputeCheck {
+  const pp = paypal(env);
+  return async (disputeId) => {
+    let dispute: any;
+    try {
+      dispute = await pp.getDispute(disputeId);
+    } catch {
+      return { ok: false, retire: false, why: "read failure" };
+    }
+    return checkActionable(dispute, kind);
+  };
 }
 
 const securityHeaders = {
@@ -439,7 +452,7 @@ async function approve(req: Request, env: Env, id: string): Promise<Response> {
             ? { filing: null, operation: { ...operation, state: "uncertain" } }
             : { filing: null, operation: null, filingConflict: null });
           return Response.json(
-            { error: "The evidence pack could not be built. Nothing was sent to PayPal. Try again." },
+            { error: "The evidence pack could not be built. The dispute response was not filed. Try again." },
             { status: 502 },
           );
         }
@@ -699,23 +712,26 @@ async function route(req: Request, env: Env, ctx: ExecutionContext, sessionId: s
   if (path === "/api/judge/next") {
     const requested = url.searchParams.get("kind");
     const kind: CaseKind = requested === "ship" ? "ship" : requested === "accept" ? "accept" : "fight";
-    const pp = paypal(env);
-    const check = async (disputeId: string) => {
-      let dispute: any;
-      try {
-        dispute = await pp.getDispute(disputeId);
-      } catch {
-        return { ok: false as const, retire: false as const, why: "read failure" };
-      }
-      return checkActionable(dispute, kind);
-    };
-    const a = await nextForJudge(env.DB, sessionId, kind, check);
+    const a = await nextForJudge(env.DB, sessionId, kind, judgeCheck(env, kind));
     if (a.replay && kind !== "ship") {
       return Response.json({ ...a, replay: replayDraft(kind) });
     }
     return Response.json(a);
   }
-  if (path === "/api/judge/pool") return Response.json(await poolCounts(env.DB));
+  if (path === "/api/judge/pool") {
+    if (req.method === "GET" && url.searchParams.get("verify") === "1") {
+      const now = Date.now();
+      const claim = await env.DB.prepare(`INSERT INTO meta (key, value) VALUES ('pool_verify_at', ?)
+        ON CONFLICT(key) DO UPDATE SET value = excluded.value WHERE CAST(meta.value AS INTEGER) <= ?`)
+        .bind(String(now), now - 10 * 60 * 1000).run();
+      if ((claim.meta.changes ?? 0) > 0) {
+        for (const kind of ["fight", "accept"] as const) {
+          await verifyFree(env.DB, kind, judgeCheck(env, kind), 5);
+        }
+      }
+    }
+    return Response.json(await poolCounts(env.DB));
+  }
   if (path === "/api/me") {
     const v = sessionId;
     const mine = await env.DB.prepare("SELECT dispute_id, kind FROM pool WHERE handed_to = ?").bind(v).all();

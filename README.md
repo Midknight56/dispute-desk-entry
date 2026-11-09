@@ -32,10 +32,12 @@ All of it was built from 22 Oct 2026 (the first commit of this repo).
 2. Analyse: the desk reads the dispute and the payment, the model picks whether the order and the tracking are
    needed for the buyer's reason, and the desk fetches them from PayPal.
 3. Code decides the verdict (`src/rules.ts`), not the model. Not received, and delivered before the claim: fight.
-   No delivery record and under $10.00: accept and refund. Other supported cases: offer half back. A failed read,
-   records that disagree, a currency other than USD or an unsupported reason: review, and nothing can be filed. The
-   $10.00 line and the half back offer are this desk's own settings (`FIGHT_LINE_USD`, `OFFER_SHARE`), not PayPal
-   rules, and the case panel and the evidence pack say so.
+   No delivery record and under $10.00: accept and refund. Other supported cases: offer half back. A failed PayPal
+   read, a payment smaller than the dispute or in another currency, a payment already refunded or reversed, a
+   currency other than USD or an unsupported reason: review, and nothing can be filed. Other disagreements, such as
+   PayPal tracking that says shipped while the seller's record says delivered, are shown on the case but do not stop
+   it. The $10.00 line and the half back offer are this desk's own settings (`FIGHT_LINE_USD`, `OFFER_SHARE`), not
+   PayPal rules, and the case panel and the evidence pack say so.
 4. The model picks 2 to 4 typed facts by id (`{"facts":["F2","F1"]}`). Code writes every sentence from those facts and
    the facts the verdict needs (`src/agent.ts`, `src/sentence-facts.ts`). Model prose and unknown ids are dropped. An
    unreadable pick gets one retry, then code picks the facts.
@@ -80,8 +82,10 @@ trial watermark.
 ## For judges
 
 Each visitor gets their own real sandbox disputes, one to fight and one to accept, opened beforehand by sandbox buyers
-(`tools/pool.py`). Before a case is handed out, the desk asks PayPal whether it is still open, has more than a day left,
-and offers the action the judge needs; a case that does not is retired and the next one is tried (`src/judge.ts`). A
+(`tools/pool.py`). Before a case is handed out, the desk asks PayPal whether it is still open, has a response deadline
+more than a day away, and offers the filing action the judge needs (evidence for a fight, accept for a refund); a
+case that does not is retired and the next one is tried (`src/judge.ts`). A judge whose case has closed gets a new one
+on their next visit. A
 visitor can file only on the cases handed to them. When the pool runs out, or PayPal does not answer, the desk shows a
 labelled draft rebuilt from saved sandbox records and says so. That rebuilt draft keeps its saved decision; it is not
 analysed again. If a webhook is lost, the next load of the list (at most every 15 minutes) syncs with PayPal (`src/sync.ts`).

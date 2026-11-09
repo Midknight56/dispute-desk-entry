@@ -66,7 +66,14 @@ export function actionableRoutes(ids: string[]) {
   return Object.fromEntries(
     ids.map((id) => [
       `GET /v1/customer/disputes/${id}`,
-      { json: { dispute_id: id, status: 'WAITING_FOR_SELLER_RESPONSE', links: [{ rel: 'provide_evidence' }, { rel: 'accept_claim' }, { rel: 'make_offer' }] } },
+      {
+        json: {
+          dispute_id: id,
+          status: 'WAITING_FOR_SELLER_RESPONSE',
+          seller_response_due_date: new Date(Date.now() + 48 * 3600 * 1000).toISOString(),
+          links: [{ rel: 'provide_evidence' }, { rel: 'accept_claim' }, { rel: 'make_offer' }],
+        },
+      },
     ]),
   );
 }

@@ -93,7 +93,7 @@ describe("job 33 pack required for claim stage evidence", () => {
     const response = await post(env, "approve");
     expect(response.status).toBe(502);
     expect(await response.json()).toEqual({
-      error: "The evidence pack could not be built. Nothing was sent to PayPal. Try again.",
+      error: "The evidence pack could not be built. The dispute response was not filed. Try again.",
     });
 
     const writeCalls = calls.filter((c) => c.method !== "GET" && c.path !== "/v1/oauth2/token");

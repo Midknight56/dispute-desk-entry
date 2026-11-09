@@ -325,3 +325,31 @@
     grid-template-columns: 1fr;
   }
 }
+
+.decision-diff {
+  margin-top: 16px;
+  padding: 12px 14px;
+  border: 1px solid var(--line, #d6ddd9);
+  border-radius: 8px;
+}
+.decision-diff h3 { margin: 0 0 6px; font-size: 1rem; }
+.decision-explain { margin: 0 0 10px; }
+.decision-diff-list { list-style: none; margin: 0; padding: 0; display: grid; gap: 8px; }
+.decision-diff-list li { display: grid; grid-template-columns: auto 1fr; gap: 2px 10px; align-items: baseline; }
+.diff-tag {
+  grid-row: span 2;
+  font-size: 0.75rem;
+  font-weight: 700;
+  padding: 2px 8px;
+  border-radius: 999px;
+  border: 1px solid currentColor;
+}
+.diff-tag.removed { color: #a3261b; }
+.diff-tag.added { color: #1d6b3a; }
+.diff-tag.kept { color: var(--muted, #4b5563); }
+.diff-text { overflow-wrap: anywhere; }
+.diff-source { font-size: 0.8rem; color: var(--muted, #5b6560); overflow-wrap: anywhere; }
+.decision-sentences li.line-removed { text-decoration: line-through; color: #a3261b; }
+.decision-sentences li.line-added { color: #1d6b3a; font-weight: 600; }
+.decision-sentences li.line-removed::before { content: "Removed: "; font-weight: 700; text-decoration: none; }
+.decision-sentences li.line-added::before { content: "Added: "; font-weight: 700; }
