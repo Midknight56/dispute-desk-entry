@@ -61,6 +61,16 @@ export function fakePayPal(routes: Record<string, { json: unknown; status?: numb
   return calls;
 }
 
+// PayPal answers for pool cases that are still open and actionable, for tests that ask /api/judge/next.
+export function actionableRoutes(ids: string[]) {
+  return Object.fromEntries(
+    ids.map((id) => [
+      `GET /v1/customer/disputes/${id}`,
+      { json: { dispute_id: id, status: 'WAITING_FOR_SELLER_RESPONSE', links: [{ rel: 'provide_evidence' }, { rel: 'accept_claim' }, { rel: 'make_offer' }] } },
+    ]),
+  );
+}
+
 export function ctx() {
   const promises: Promise<unknown>[] = [];
   return {

@@ -11,7 +11,7 @@ export function createInitialLayout(compact = false) {
           onHold: {
             type: 'value',
             dataMapping: { value: [{ id: 'disputes.held_amount', aggregation: 'sum' }] },
-            format: { title: { enabled: true, text: 'On hold' } },
+            format: { title: { enabled: true, text: 'Open dispute amount' } },
           },
           open: {
             type: 'value',

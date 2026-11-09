@@ -13,7 +13,13 @@ export type Dispute = {
   filed_at?: string | null;
   created?: string;
 };
-export type TileValues = { onHold: number; open: number; nextDeadline: string; settled: number; leftOut: number };
+export type TileValues = {
+  openAmount: number;
+  open: number;
+  nextDeadline: string;
+  settled: number;
+  leftOut: number;
+};
 
 export function formatMoney(amount: string | number, currency = 'USD'): string {
   const value = typeof amount === 'number' ? amount : Number(amount);
@@ -59,18 +65,31 @@ export function evidenceText(summary: string, reason: string): string {
     .replaceAll(reason, reasonLabel(reason));
 }
 
+export function plainReasons(reasons?: string[]): string {
+  if (!reasons || !reasons.length) return '';
+  return reasons
+    .map((reason) => {
+      if (reason === 'MERCHANDISE_OR_SERVICE_NOT_RECEIVED') return 'not received';
+      if (reason === 'MERCHANDISE_OR_SERVICE_NOT_AS_DESCRIBED') return 'not as described';
+      return reason.toLowerCase().replace(/_/g, ' ');
+    })
+    .join(', ');
+}
+
 export function tileValues(disputes: Dispute[], now = Date.now()): TileValues {
   const openItems = disputes.filter((item) => item.status !== 'RESOLVED');
   const dueTimes = openItems.map((item) => (item.due ? Date.parse(item.due) : Number.NaN)).filter(Number.isFinite);
   const nearest = dueTimes.length ? Math.min(...dueTimes) : null;
   const remaining = nearest === null ? null : formatDeadline(new Date(nearest).toISOString(), now);
-  return {
-    onHold: openItems.reduce((total, item) => total + (item.currency === 'USD' ? Number(item.amount) || 0 : 0), 0),
+  const openAmount = openItems.reduce((total, item) => total + (item.currency === 'USD' ? Number(item.amount) || 0 : 0), 0);
+  const values: TileValues = {
+    openAmount,
     open: openItems.length,
     nextDeadline: remaining === null ? 'none' : remaining === 'Late' ? 'Late' : `in ${remaining}`,
     settled: disputes.length - openItems.length,
     leftOut: openItems.filter((item) => item.currency !== 'USD').length,
   };
+  return values;
 }
 
 // PayPal's dispute statuses in the seller's words. Unknown ones show as written, never as settled.

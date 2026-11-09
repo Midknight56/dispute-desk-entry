@@ -1,4 +1,4 @@
-"""Daily local check of the judge sandbox pool."""
+"""Daily local check of the judge sandbox pool, running through 16 December 2026 (judging ends 15 December)."""
 from __future__ import annotations
 
 import argparse
@@ -23,7 +23,9 @@ def is_low(counts: list[dict]) -> list[str]:
 
 def pool_line(counts: list[dict], now: datetime) -> str:
     by_kind = {row.get("kind"): row.get("free", 0) for row in counts}
+    retired = sum(row.get("retired", 0) for row in counts)
     values = [f"{name} {by_kind.get(kind, 0)} free" for kind, name in (("fight", "fight"), ("accept", "refund"), ("ship", "ship"))]
+    values.append(f"{retired} retired")
     low = is_low(counts)
     suffix = f"LOW: {', '.join(low)}" if low else "OK"
     return f"- {now:%Y-%m-%d %H:%M}: {', '.join(values)}. {suffix}"

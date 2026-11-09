@@ -1,10 +1,11 @@
 # Dispute Desk
 
-Answer a PayPal dispute with your own records, in one tap.
+Answer a PayPal dispute from your own records. The desk gathers them, shows a checked reply, and files only when you approve.
 
-A small seller gets a PayPal dispute: the money goes on hold and a deadline starts. Dispute Desk sees the dispute
-when PayPal's webhook lands, reads the payment, fetches the order and tracking it needs, decides to fight, accept or offer half,
-and drafts the reply with a record id behind every sentence. Nothing is filed until the seller taps Approve.
+A small seller gets a PayPal dispute and a response deadline. Dispute Desk sees the dispute when PayPal's webhook
+lands, reads the payment, fetches the order and tracking it needs, and decides to fight, accept, offer half back or
+stop for review. The model picks which recorded facts to use; code writes every sentence, and each one names the record
+it came from (a PayPal record or the seller's own shipping record). Nothing is filed until the seller approves.
 
 Try it: https://dispute-desk.midknight-labs.workers.dev (the dashboard view is at `/studio`, the measured proof at
 `/proof`). Everything runs on the PayPal sandbox. Built for the PayPal AI Hackathon.
@@ -14,11 +15,13 @@ Try it: https://dispute-desk.midknight-labs.workers.dev (the dashboard view is a
 Open https://dispute-desk.midknight-labs.workers.dev. No login: you are handed live sandbox disputes of your own,
 marked Yours.
 
-1. Tap your fight case, then Analyse. Each sentence of the draft shows the PayPal record behind it. Tap Approve: it is
-   filed with PayPal, with the tracking and the evidence pack.
+1. Tap your fight case, then Analyse. Each sentence of the draft shows the record behind it, from PayPal or from the
+   seller's shipping record. Tap Approve: it is filed with PayPal with the tracking. At the claim stage the evidence
+   pack PDF goes too, and if the pack cannot be built nothing is filed.
 2. Open `/studio`. Under Tracking on PayPal, tap Add tracking on your late sale: the tracking goes onto PayPal before
    any dispute.
-3. Open `/proof`: the rules run on labelled cases, with no model call.
+3. Open `/proof`: the rules run on labelled cases, with no model call. Under One changed fact, change one fact on a
+   sample case (say, move delivery after the claim) and watch the verdict and the draft change beside the original.
 
 All of it was built from 22 Oct 2026 (the first commit of this repo).
 
@@ -29,9 +32,13 @@ All of it was built from 22 Oct 2026 (the first commit of this repo).
 2. Analyse: the desk reads the dispute and the payment, the model picks whether the order and the tracking are
    needed for the buyer's reason, and the desk fetches them from PayPal.
 3. Code decides the verdict (`src/rules.ts`), not the model. Not received, and delivered before the claim: fight.
-   No delivery record and under $10.00: accept and refund. Anything else: offer half.
-4. The model writes the sentences. A sentence that names a record the desk did not fetch is dropped, and so is one
-   with a number that is not in its record (`src/agent.ts`). If none is left, fixed wording is written from the records.
+   No delivery record and under $10.00: accept and refund. Other supported cases: offer half back. A failed read,
+   records that disagree, a currency other than USD or an unsupported reason: review, and nothing can be filed. The
+   $10.00 line and the half back offer are this desk's own settings (`FIGHT_LINE_USD`, `OFFER_SHARE`), not PayPal
+   rules, and the case panel and the evidence pack say so.
+4. The model picks 2 to 4 typed facts by id (`{"facts":["F2","F1"]}`). Code writes every sentence from those facts and
+   the facts the verdict needs (`src/agent.ts`, `src/sentence-facts.ts`). Model prose and unknown ids are dropped. An
+   unreadable pick gets one retry, then code picks the facts.
 5. Approve: the desk files with PayPal by the actions the case allows at that moment: evidence with the tracking and
    the evidence pack, accept the claim with a refund, or make an offer. PayPal's next webhooks move the case on the page.
 
@@ -44,9 +51,12 @@ is then on PayPal's side before any buyer asks.
 
 ## The proof page
 
-`/proof` runs 24 labelled cases through the verdict rule and shows 24 of 24 right, then runs altered sentences through
-the checker (a wrong record id, a changed number, the buyer's own words as fact) and shows every one struck. A box lets
-you type your own sentence and watch the checker keep or strike it. It is plain code: no model call, no cost.
+`/proof` runs 41 labelled cases through the verdict rule and shows 41 of 41 matching this desk's own rules. These are
+checks of the rules we wrote, not real merchant outcomes. It then runs 21 altered sentences through the checker (a
+wrong record id, a changed number, the buyer's own words as fact, a true amount with an invented clause) and shows every
+one struck. The checker keeps only the exact sentences code is allowed to write, so it can also strike a true sentence
+worded another way. A box lets you type your own sentence and watch it kept or struck. One changed fact lets you change
+one hypothetical fact on a sample case and compare. It is plain code: no model call, no cost.
 
 Every analysed case also has an evidence pack: a PDF with each sentence numbered and tagged with its exhibit, one
 section per record, and a check value on every page (`/api/disputes/{id}/pack.pdf`).
@@ -59,7 +69,7 @@ section per record, and a check value on every page (`/api/disputes/{id}/pack.pd
 | PayPal Disputes | Reading the case and filing: `provide-evidence`, `accept-claim`, `make-offer` |
 | PayPal Webhooks | Dispute and capture events, verified before anything is stored |
 | Cloudflare Workers, D1 | The page, the API, disputes, events, the feed and the caps |
-| Workers AI (`@cf/ibm-granite/granite-4.0-h-micro`) | Choosing records and writing sentences |
+| Workers AI (`@cf/ibm-granite/granite-4.0-h-micro`) | Choosing which records to read and which facts to use |
 | AG Grid, AG Charts | The disputes grid, the evidence column, and charts asked for in words |
 | AG Studio 3.0 | The `/studio` dashboard: KPIs, the grid, charts, custom widgets (evidence readiness, a deadline ring, tracking on PayPal, and a checked draft) and its AI Assistant panel |
 
@@ -70,8 +80,11 @@ trial watermark.
 ## For judges
 
 Each visitor gets their own real sandbox disputes, one to fight and one to accept, opened beforehand by sandbox buyers
-(`tools/pool.py`). A visitor can file only on the cases handed to them. When the pool runs out, the desk shows a recorded run and says
-so. If a webhook is lost, the next load of the list (at most every 15 minutes) syncs with PayPal (`src/sync.ts`).
+(`tools/pool.py`). Before a case is handed out, the desk asks PayPal whether it is still open, has more than a day left,
+and offers the action the judge needs; a case that does not is retired and the next one is tried (`src/judge.ts`). A
+visitor can file only on the cases handed to them. When the pool runs out, or PayPal does not answer, the desk shows a
+labelled draft rebuilt from saved sandbox records and says so. That rebuilt draft keeps its saved decision; it is not
+analysed again. If a webhook is lost, the next load of the list (at most every 15 minutes) syncs with PayPal (`src/sync.ts`).
 
 ## What it costs
 

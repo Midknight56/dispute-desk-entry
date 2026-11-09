@@ -3,6 +3,7 @@ import { createRoot } from 'react-dom/client';
 import { applyTheme } from '../theme';
 import '../app.css';
 import './proof.css';
+import DecisionExplorer from './DecisionExplorer';
 
 type Proof = {
   verdicts: { total: number; right: number; rows: { label: string; expected: string; got: string; rule: string }[] };
@@ -159,6 +160,7 @@ function ProofPage() {
             )}
             <small>Guarded by tests/proof.test.ts</small>
           </section>
+          <DecisionExplorer />
         </main>
       )}
     </div>

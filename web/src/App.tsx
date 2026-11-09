@@ -28,6 +28,7 @@ export default function App() {
   const [ownerKey, setOwnerKey] = useState<string | null>(null);
   const [feed, setFeed] = useState<FeedRow[]>([]);
   const [selected, setSelected] = useState<string | null>(null);
+  const [caseRefs, setCaseRefs] = useState<string[]>([]);
   const [offline, setOffline] = useState(false);
   const [updatesDelayed, setUpdatesDelayed] = useState(false);
   const [loaded, setLoaded] = useState(false);
@@ -184,7 +185,6 @@ export default function App() {
               selected={selected}
               onSelect={selectCase}
             />
-            <Feed rows={feed} />
           </div>
           <CasePanel
             id={selected}
@@ -193,8 +193,10 @@ export default function App() {
             mine={mine}
             ownerKey={ownerKey}
             replay={selected ? replays[selected] : undefined}
+            onRefs={setCaseRefs}
           />
         </div>
+        <Feed rows={feed} caseRefs={caseRefs} />
       </main>
     </div>
   );

@@ -33,12 +33,12 @@ describe('web formatting helpers', () => {
         [dispute(), dispute({ id: 'case-2', status: 'RESOLVED', amount: '12.00' })],
         Date.parse('2026-10-22T00:00:00Z'),
       ),
-    ).toEqual({ onHold: 48, open: 1, nextDeadline: 'in 1d', settled: 1, leftOut: 0 });
+    ).toEqual({ openAmount: 48, open: 1, nextDeadline: 'in 1d', settled: 1, leftOut: 0 });
   });
 
   it('sums only open USD cases and keeps all open cases in the count', () => {
     const values = tileValues([dispute({ amount: '6' }), dispute({ id: 'case-2', currency: 'EUR', amount: '100' })]);
-    expect(values.onHold).toBe(6);
+    expect(values.openAmount).toBe(6);
     expect(values.leftOut).toBe(1);
     expect(values.open).toBe(2);
   });

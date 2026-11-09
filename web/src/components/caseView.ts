@@ -44,6 +44,9 @@ export function decisionView(decision: Run['decision']) {
     missing: decision.missing ?? [],
     changeIf: decision.changeIf,
     disagreements: decision.disagreements ?? [],
+    policy: (decision as any).policy as
+      | { fightLine: string; offerShare: string; currency: 'USD'; reasons: string[]; note: string }
+      | undefined,
   };
 }
 
@@ -59,4 +62,16 @@ export async function loadResource<T>(
   } catch {
     fail(true);
   }
+}
+
+// One row per record: the same id, or the same kind with the same summary, is shown once.
+export function uniqueRecords(records: Run['records']) {
+  const seen = new Set<string>();
+  return records.filter((item) => {
+    const same = `${item.kind ?? ''}|${item.summary}`;
+    if (seen.has(`id|${item.id}`) || seen.has(same)) return false;
+    seen.add(`id|${item.id}`);
+    seen.add(same);
+    return true;
+  });
 }

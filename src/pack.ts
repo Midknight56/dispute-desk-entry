@@ -1,6 +1,6 @@
 import { PDFDocument, StandardFonts, rgb } from "pdf-lib";
 import { plain } from "./agent";
-import { formatMoney, type Decision } from "./rules";
+import { formatMoney, plainReasons, type Decision } from "./rules";
 
 export type PackInput = {
   disputeId: string;
@@ -13,6 +13,7 @@ export type PackInput = {
   missing?: string[];
   changeIf?: string;
   disagreements?: string[];
+  policy?: Decision["policy"];
   sentences: Array<{ text: string; record_id: string }>;
   records: Array<{ id: string; kind: string; summary: string; decision?: Decision }>;
   filed?: { call: string; at: string };
@@ -137,8 +138,14 @@ export async function buildPack(input: PackInput): Promise<Uint8Array> {
   const reason = plain(input.reason);
   drawLine(`Reason: ${reason.charAt(0).toUpperCase()}${reason.slice(1)}`);
   drawLine(`Verdict: ${input.verdict}`);
-  drawLine(`Why: ${input.why}`);
   const decision = input.records.find((record) => record.id === input.disputeId && record.kind === "dispute")?.decision;
+  const policy = input.policy ?? decision?.policy;
+  if (policy) {
+    drawLine(`Fight line ${policy.fightLine}. Weak cases offer ${policy.offerShare} back.`);
+    drawLine(policy.note);
+    drawLine(`Handles: ${plainReasons(policy.reasons)}`);
+  }
+  drawLine(`Why: ${input.why}`);
   const facts = input.facts ?? decision?.facts ?? [];
   if (facts.length) drawLine("Facts used", { bold: true });
   for (const fact of facts) drawLine(`${fact.label}: ${fact.value}${fact.recordId ? ` [${fact.recordId}]` : ""}`);

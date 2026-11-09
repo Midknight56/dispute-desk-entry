@@ -140,11 +140,11 @@ describe("battle flows", () => {
 
   it("files the evidence when the pack cannot be built", async () => {
     const { env, DB } = await makeEnv();
-    await seed(DB, dispute(), true);
+    await seed(DB, dispute({ dispute_life_cycle_stage: "INQUIRY" }), true);
     vi.spyOn(crypto.subtle, "digest").mockRejectedValueOnce(new Error("pack failure"));
     let form: FormData | undefined;
     fakePayPal({
-      "GET /v1/customer/disputes/PP-BATTLE": { json: dispute() },
+      "GET /v1/customer/disputes/PP-BATTLE": { json: dispute({ dispute_life_cycle_stage: "INQUIRY" }) },
       "POST /v1/customer/disputes/PP-BATTLE/provide-evidence": { json: {} },
     });
     const fetch = globalThis.fetch;

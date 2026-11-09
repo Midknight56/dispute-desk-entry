@@ -10,9 +10,10 @@ import { store } from "./store";
 import { finishRun, readUsage, recordRun, reserveRun, reserveNeurons, utcDay, visitorId } from "./usage";
 import { handleWebhook, type PayPalEvent } from "./webhooks";
 import { needsSync } from "./sync";
-import { nextForJudge, poolCounts, type CaseKind } from "./judge";
+import { nextForJudge, poolCounts, checkActionable, type CaseKind } from "./judge";
 import { replayDraft, replayById } from "./replay";
 import { checkSentence, runProof } from "./proof";
+import { compareScenario, scenarioOptions } from "./scenario";
 import { buildPack } from "./pack";
 import { session, sessionCookie } from "./session";
 import { shipState } from "./ship";
@@ -432,6 +433,16 @@ async function approve(req: Request, env: Env, id: string): Promise<Response> {
           ref: id,
           detail: `pack could not be built: ${String((error as Error)?.message ?? error)}`,
         });
+        if (String(d.dispute_life_cycle_stage ?? "").toUpperCase() !== "INQUIRY") {
+          // A filing that may already have reached PayPal stays on record as uncertain; a new one is dropped.
+          await s.mergeData(id, reconciling && operation
+            ? { filing: null, operation: { ...operation, state: "uncertain" } }
+            : { filing: null, operation: null, filingConflict: null });
+          return Response.json(
+            { error: "The evidence pack could not be built. Nothing was sent to PayPal. Try again." },
+            { status: 502 },
+          );
+        }
       }
     }
     if (operation && !reconciling) {
@@ -633,6 +644,21 @@ async function route(req: Request, env: Env, ctx: ExecutionContext, sessionId: s
       return Response.json({ error: "Add a sentence and record id." }, { status: 400 });
     return Response.json(checkSentence(body.text, body.record_id));
   }
+  if (path === "/api/proof/scenario" && req.method === "GET") return Response.json(scenarioOptions());
+  if (path === "/api/proof/scenario" && req.method === "POST") {
+    const parsed = await req.json().catch(() => ({}));
+    const body = (parsed && typeof parsed === "object" ? parsed : {}) as {
+      fixture?: unknown;
+      change?: { field?: unknown; value?: unknown };
+    };
+    if (typeof body.fixture !== "string" || !body.change || typeof body.change.field !== "string")
+      return Response.json({ error: "Add a fixture and change." }, { status: 400 });
+    try {
+      return Response.json(compareScenario(body.fixture, { field: body.change.field, value: body.change.value }));
+    } catch (e) {
+      return Response.json({ error: e instanceof Error ? e.message : String(e) }, { status: 400 });
+    }
+  }
 
   if (path === "/webhooks/paypal" && req.method === "POST") {
     const pp = paypal(env);
@@ -673,7 +699,17 @@ async function route(req: Request, env: Env, ctx: ExecutionContext, sessionId: s
   if (path === "/api/judge/next") {
     const requested = url.searchParams.get("kind");
     const kind: CaseKind = requested === "ship" ? "ship" : requested === "accept" ? "accept" : "fight";
-    const a = await nextForJudge(env.DB, sessionId, kind);
+    const pp = paypal(env);
+    const check = async (disputeId: string) => {
+      let dispute: any;
+      try {
+        dispute = await pp.getDispute(disputeId);
+      } catch {
+        return { ok: false as const, retire: false as const, why: "read failure" };
+      }
+      return checkActionable(dispute, kind);
+    };
+    const a = await nextForJudge(env.DB, sessionId, kind, check);
     if (a.replay && kind !== "ship") {
       return Response.json({ ...a, replay: replayDraft(kind) });
     }

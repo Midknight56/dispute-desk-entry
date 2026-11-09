@@ -1,0 +1,2 @@
+ALTER TABLE pool ADD COLUMN retired_at TEXT;
+ALTER TABLE pool ADD COLUMN retired_why TEXT;

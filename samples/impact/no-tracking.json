@@ -1,0 +1,86 @@
+{
+  "id": "PP-D-IMPACT-3",
+  "title": "No tracking at all",
+  "records": {
+    "dispute": {
+      "dispute_id": "PP-D-IMPACT-3",
+      "reason": "MERCHANDISE_OR_SERVICE_NOT_RECEIVED",
+      "status": "UNDER_REVIEW",
+      "create_time": "2026-10-23T12:00:00Z",
+      "dispute_amount": {
+        "value": "24.00",
+        "currency_code": "USD"
+      },
+      "disputed_transactions": [
+        {
+          "seller_transaction_id": "CAP-IMPACT-3"
+        }
+      ],
+      "evidences": [
+        {
+          "source": "SUBMITTED_BY_BUYER",
+          "notes": "I never got the item"
+        }
+      ]
+    },
+    "capture": {
+      "id": "CAP-IMPACT-3",
+      "status": "COMPLETED",
+      "amount": {
+        "value": "24.00",
+        "currency_code": "USD"
+      },
+      "create_time": "2026-10-20T10:00:00Z",
+      "supplementary_data": {
+        "related_ids": {
+          "order_id": "ORD-IMPACT-3"
+        }
+      }
+    },
+    "order": {
+      "id": "ORD-IMPACT-3",
+      "status": "COMPLETED",
+      "purchase_units": [
+        {
+          "description": "Linen notebook",
+          "shipping": {
+            "address": {
+              "admin_area_2": "Toronto",
+              "admin_area_1": "ON",
+              "country_code": "CA"
+            }
+          }
+        }
+      ]
+    }
+  },
+  "facts": {
+    "disputeId": "PP-D-IMPACT-3",
+    "captureId": "CAP-IMPACT-3",
+    "reason": "MERCHANDISE_OR_SERVICE_NOT_RECEIVED",
+    "amount": 24.0,
+    "currency": "USD",
+    "claimAt": "2026-10-23T12:00:00Z",
+    "hasCapture": true,
+    "captureRead": "ok",
+    "hasOrder": true,
+    "orderRead": "ok",
+    "trackingRead": "none",
+    "paymentAmount": 24.0,
+    "paymentCurrency": "USD",
+    "paymentStatus": "COMPLETED"
+  },
+  "answer": {
+    "verdict": "OFFER",
+    "mustFind": [
+      "no delivery record",
+      "amount over fight line",
+      "offer half back"
+    ],
+    "traps": [
+      "tracking confirmed delivery",
+      "accept without offer",
+      "fight dispute"
+    ]
+  }
+}

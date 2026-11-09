@@ -141,14 +141,14 @@ it("keeps both cached replay rows, selection and totals through every refresh", 
     expect(props(DisputeGrid).rows.map((item: Dispute) => item.id)).toEqual(["fight", "accept"]);
     expect(props(CasePanel).id).toBe(selected);
     expect(props(CasePanel).replay).toBeDefined();
-    expect(props(Tiles).values).toMatchObject({ open: 2, onHold: 20 });
+    expect(props(Tiles).values).toMatchObject({ open: 2, openAmount: 20 });
   }
   // A live row with the same ID wins without counting the replay twice.
   vi.mocked(getDisputes).mockResolvedValue([row("fight", "25")]);
   poll();
   await settle();
   expect(props(DisputeGrid).rows).toHaveLength(2);
-  expect(props(Tiles).values.onHold).toBe(35);
+  expect(props(Tiles).values.openAmount).toBe(35);
 });
 
 it("retains ownership after the first list fails and restores access on retry", async () => {

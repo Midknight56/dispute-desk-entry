@@ -92,7 +92,7 @@ describe('case evidence and outcomes', () => {
       }),
     );
     for (const text of [
-      'Why',
+      'Decisive evidence',
       'Paid',
       '$48.00',
       'Not found',

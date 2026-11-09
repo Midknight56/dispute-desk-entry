@@ -16,8 +16,8 @@ import { showsApprove } from '../judge';
 import { errorMessage } from '../errors';
 import DeadlineRing from '../widgets/DeadlineRing';
 import { beginRequest } from './requestGuard';
-import { approvalMessage, citation, decisionView, filingNeedsCheck, loadResource, recordType } from './caseView';
-import { DecisionFacts, FiledOutcome, FilingNotice, LoadNotice, RunActions } from './CaseStates';
+import { approvalMessage, citation, filingNeedsCheck, loadResource, recordType, uniqueRecords } from './caseView';
+import { DecisionCard, DecisionFacts, FiledOutcome, FilingNotice, LoadNotice, RunActions } from './CaseStates';
 
 function shortRef(value: string) {
   return value.length > 18 ? `${value.slice(0, 18)}…` : value;
@@ -30,12 +30,14 @@ export default function CasePanel({
   ownerKey,
   replay,
   created,
+  onRefs,
 }: {
   id: string | null;
   refreshKey: number;
   mine: Set<string>;
   ownerKey: string | null;
   created?: string;
+  onRefs?: (refs: string[]) => void;
   replay?: { label: string; run: Run; dispute: Omit<CaseData, 'updated_at' | 'data'> };
 }) {
   const [loadFailed, setLoadFailed] = useState(false);
@@ -102,6 +104,10 @@ export default function CasePanel({
       active = false;
     };
   }, [id, refreshKey, replay, retryKey]);
+  // Tell the activity list which ids belong to this case: the case and every record it read.
+  useEffect(() => {
+    onRefs?.(id ? [id, ...(run?.records ?? []).map((item) => item.id)] : []);
+  }, [id, run, onRefs]);
   const analyse = async () => {
     if (!id) return;
     if (
@@ -177,7 +183,6 @@ export default function CasePanel({
   const status = caseStatus(record.status, filed?.ok === true);
   const progress = caseProgress(status);
   const deadline = replyBy(record.due, status);
-  const view = run ? decisionView(run.decision) : null;
   const canApprove = showsApprove({ ...record, replay: Boolean(replay) }, mine, ownerKey) && status !== 'RESOLVED';
   const canAnalyse = !filed && !replay && status !== 'RESOLVED' && (mine.has(id) || Boolean(ownerKey));
   const filingUncertain = uncertain || filingNeedsCheck(filed ?? undefined, record.data?.operation);
@@ -231,18 +236,28 @@ export default function CasePanel({
           {error && <p className="offline action-warning">{error}</p>}
         </>
       )}
+      {!run && !replay && !canApprove && !filed && status !== 'RESOLVED' && (
+        <p className="muted-line">This case belongs to another visitor. You can read it, not file it.</p>
+      )}
       {run && (
         <>
-          <div className={`verdict ${view?.tone}`} role="status">
-            <strong>
-              {run.decision.verdict}
-              {run.decision.verdict === 'OFFER' && run.decision.offerAmount != null
-                ? ` ${formatMoney(run.decision.offerAmount, record.currency)}`
-                : ''}
-            </strong>
-            <p>{run.decision.why}</p>
-          </div>
-          <DecisionFacts run={run} />
+          <DecisionCard run={run} currency={record.currency}>
+            {!replay && !canApprove && !filed && status !== 'RESOLVED' && (
+              <p className="muted-line">This case belongs to another visitor. You can read it, not file it.</p>
+            )}
+            <RunActions
+              run={run}
+              amount={record.amount}
+              currency={record.currency}
+              canAnalyse={canAnalyse && !filingUncertain}
+              canApprove={canApprove && !filed && !filingUncertain}
+              busy={busy}
+              error={error}
+              approvalWarning={approvalWarning}
+              analyse={analyse}
+              approve={approve}
+            />
+          </DecisionCard>
           {cap && <p className="muted-line">{cap}</p>}
           <div className="draft">
             <h3>Draft</h3>
@@ -278,6 +293,8 @@ export default function CasePanel({
               );
             })}
           </div>
+          {run.writer === 'template' && <p className="muted-line">Written from the records by the template</p>}
+          {run.writer === 'model' && <p className="muted-line">The model chose these facts. Each line is written from the records.</p>}
           {run.dropped.length > 0 && (
             <div className="dropped">
               <h3>Dropped</h3>
@@ -289,30 +306,31 @@ export default function CasePanel({
               ))}
             </div>
           )}
-          <section className="evidence">
-            <h3>{run.decision.verdict === 'FIGHT' ? 'Evidence behind this draft' : 'Records read'}</h3>
+          <a
+            className="evidence-pack"
+            aria-label="Evidence pack"
+            href={`/api/disputes/${encodeURIComponent(record.id)}/pack.pdf`}
+            download={`${record.id}-evidence.pdf`}
+          >
+            <svg width="16" height="16" viewBox="0 0 16 16" fill="none" stroke="currentColor" aria-hidden="true">
+              <path d="M4 1h5l3 3v11H4z M9 1v4h3 M6 8h4 M6 11h4" />
+            </svg>
+            Evidence pack <span>PDF</span>
+          </a>
+          <DecisionFacts run={run} part="detail" />
+          <details className="records-detail">
+            <summary>
+              {`${run.decision.verdict === 'FIGHT' ? 'Evidence behind this draft' : 'Records read'}, ${uniqueRecords(run.records).length} records`}
+            </summary>
             <ul className="evidence-rows">
-              {run.records.map((item) => (
+              {uniqueRecords(run.records).map((item) => (
                 <li key={item.id}>
                   <span className="evidence-kind">{recordType(item.kind)}</span>
                   <span>{evidenceText(item.summary, record.reason)}</span>
                 </li>
               ))}
             </ul>
-            <a
-              className="evidence-pack"
-              aria-label="Evidence pack"
-              href={`/api/disputes/${encodeURIComponent(record.id)}/pack.pdf`}
-              download={`${record.id}-evidence.pdf`}
-            >
-              <svg width="16" height="16" viewBox="0 0 16 16" fill="none" stroke="currentColor" aria-hidden="true">
-                <path d="M4 1h5l3 3v11H4z M9 1v4h3 M6 8h4 M6 11h4" />
-              </svg>
-              Evidence pack <span>PDF</span>
-            </a>
-          </section>
-          {run.writer === 'template' && <p className="muted-line">Written from the records by the template</p>}
-          {run.writer === 'model' && <p className="muted-line">The model chose these facts. Each line is written from the records.</p>}
+          </details>
           <details className="steps-detail" open={run.steps.some((step) => !step.ok)}>
             <summary>
               Checks on PayPal, {run.steps.filter((step) => step.ok).length} of {run.steps.length} worked
@@ -335,23 +353,6 @@ export default function CasePanel({
             </ul>
           </details>
         </>
-      )}
-      {!replay && !canApprove && !filed && status !== 'RESOLVED' && (
-        <p className="muted-line">This case belongs to another visitor. You can read it, not file it.</p>
-      )}
-      {run && (
-        <RunActions
-          run={run}
-          amount={record.amount}
-          currency={record.currency}
-          canAnalyse={canAnalyse && !filingUncertain}
-          canApprove={canApprove && !filed && !filingUncertain}
-          busy={busy}
-          error={error}
-          approvalWarning={approvalWarning}
-          analyse={analyse}
-          approve={approve}
-        />
       )}
     </section>
   );

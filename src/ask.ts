@@ -17,7 +17,7 @@ const PERIODS = ["all", "quarter", "month"] as const;
 export const ASK_SYSTEM =
   "Turn the seller's question about their PayPal disputes into a chart spec. Reply with JSON only: " +
   '{"chart": "bar" or "pie", "groupBy": "reason" or "status" or "stage", "metric": "count" or "amount" or "held", ' +
-  '"period": "all" or "quarter" or "month"}. "amount" means money in dispute. "held" means money on hold in open disputes.';
+  '"period": "all" or "quarter" or "month"}. "amount" means money in dispute. "held" means the total amount of open disputes.';
 
 export function parseSpec(text: string): ChartSpec | undefined {
   const j = firstJson(text);
@@ -32,7 +32,7 @@ export function parseSpec(text: string): ChartSpec | undefined {
 export function keywordSpec(q: string): ChartSpec {
   const t = q.toLowerCase();
   const groupBy = /stage|claim|inquiry/.test(t) ? "stage" : /status|split|state/.test(t) ? "status" : "reason";
-  const metric = /hold|held|on hold/.test(t) ? "held" : /money|amount|\$|dollar|value/.test(t) ? "amount" : "count";
+  const metric = /hold|held|on hold|open dispute amount|open amount/.test(t) ? "held" : /money|amount|\$|dollar|value/.test(t) ? "amount" : "count";
   const period = /quarter/.test(t) ? "quarter" : /month/.test(t) ? "month" : "all";
   const chart = /pie|share|split/.test(t) ? "pie" : "bar";
   return { chart, groupBy, metric, period };
@@ -92,7 +92,7 @@ export function chartData(rows: ChartRow[], spec: ChartSpec, now = new Date()) {
 }
 
 export function chartTitle(spec: ChartSpec, leftOut = 0) {
-  const what = spec.metric === "count" ? "Disputes" : spec.metric === "held" ? "Money on hold" : "Money in dispute";
+  const what = spec.metric === "count" ? "Disputes" : spec.metric === "held" ? "Open dispute amount" : "Money in dispute";
   const when = spec.period === "all" ? "" : spec.period === "quarter" ? ", this quarter" : ", this month";
   const note = leftOut > 0 ? `, USD only, ${leftOut} case${leftOut === 1 ? "" : "s"} in another currency left out` : "";
   return `${what} by ${spec.groupBy}${when}${note}`;

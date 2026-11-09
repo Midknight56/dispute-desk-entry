@@ -860,3 +860,97 @@ main {
     height: 12px;
   }
 }
+
+/* Case screen reading order: one card holds the recommendation, its evidence and the action. */
+.decision-card {
+  display: grid;
+  gap: 12px;
+  padding: 12px;
+  border: 1px solid var(--line);
+  border-radius: 6px;
+}
+.decision-card > * {
+  margin: 0;
+}
+.decision-card .verdict {
+  margin: 0;
+}
+.decision-card .decision-facts h3 {
+  margin: 0 0 6px;
+}
+.decision-card .decision-facts section + section {
+  margin-top: 12px;
+}
+.decision-card .decision-facts ul {
+  margin: 0;
+  padding-left: 18px;
+}
+.decision-card .case-action {
+  position: static;
+  padding: 0;
+  border-top: 0;
+}
+.decision-card .money-line {
+  margin-bottom: 8px;
+}
+@media (min-width: 1024px) {
+  .case-heading {
+    grid-template-columns: minmax(0, 1fr) auto;
+    column-gap: 12px;
+    row-gap: 4px;
+  }
+  .case-heading-meta,
+  .case-reason {
+    grid-column: 1;
+  }
+  .case-deadline {
+    grid-column: 2;
+    grid-row: 1 / span 2;
+    align-self: center;
+  }
+}
+.records-detail summary {
+  min-height: 40px;
+  padding: 8px;
+  cursor: pointer;
+}
+.records-detail .evidence-rows {
+  margin: 8px 0 0;
+}
+main > .feed {
+  margin-top: 12px;
+}
+.feed-head {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  margin-bottom: 8px;
+}
+.feed-head h2 {
+  margin: 0;
+}
+.feed-filter {
+  display: flex;
+  gap: 12px;
+}
+.feed-filter button {
+  min-height: 40px;
+  padding: 8px;
+  border: 0;
+  border-bottom: 2px solid var(--line);
+  border-radius: 0;
+  background: var(--surface);
+  color: var(--text);
+  font-size: 13px;
+}
+.feed-filter button[aria-pressed='true'] {
+  border-bottom-color: var(--accent);
+  font-weight: 650;
+}
+@media (max-width: 1023px) {
+  main > .feed {
+    margin-top: 0;
+  }
+}

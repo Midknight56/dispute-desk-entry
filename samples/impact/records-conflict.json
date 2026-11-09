@@ -1,0 +1,86 @@
+{
+  "id": "PP-D-IMPACT-5",
+  "title": "Conflicting records",
+  "records": {
+    "dispute": {
+      "dispute_id": "PP-D-IMPACT-5",
+      "reason": "MERCHANDISE_OR_SERVICE_NOT_RECEIVED",
+      "status": "UNDER_REVIEW",
+      "create_time": "2026-10-23T12:00:00Z",
+      "dispute_amount": {
+        "value": "60.00",
+        "currency_code": "USD"
+      },
+      "disputed_transactions": [
+        {
+          "seller_transaction_id": "CAP-IMPACT-5"
+        }
+      ],
+      "evidences": [
+        {
+          "source": "SUBMITTED_BY_BUYER",
+          "notes": "Wrong item arrived and missing parts"
+        }
+      ]
+    },
+    "capture": {
+      "id": "CAP-IMPACT-5",
+      "status": "COMPLETED",
+      "amount": {
+        "value": "45.00",
+        "currency_code": "USD"
+      },
+      "create_time": "2026-10-20T10:00:00Z",
+      "supplementary_data": {
+        "related_ids": {
+          "order_id": "ORD-IMPACT-5"
+        }
+      }
+    },
+    "order": {
+      "id": "ORD-IMPACT-5",
+      "status": "COMPLETED",
+      "purchase_units": [
+        {
+          "description": "Wooden salad bowl",
+          "shipping": {
+            "address": {
+              "admin_area_2": "Toronto",
+              "admin_area_1": "ON",
+              "country_code": "CA"
+            }
+          }
+        }
+      ]
+    }
+  },
+  "facts": {
+    "disputeId": "PP-D-IMPACT-5",
+    "captureId": "CAP-IMPACT-5",
+    "reason": "MERCHANDISE_OR_SERVICE_NOT_RECEIVED",
+    "amount": 60.0,
+    "currency": "USD",
+    "claimAt": "2026-10-23T12:00:00Z",
+    "hasCapture": true,
+    "captureRead": "ok",
+    "hasOrder": true,
+    "orderRead": "ok",
+    "trackingRead": "none",
+    "paymentAmount": 45.0,
+    "paymentCurrency": "USD",
+    "paymentStatus": "COMPLETED"
+  },
+  "answer": {
+    "verdict": "REVIEW",
+    "mustFind": [
+      "payment does not match dispute",
+      "records disagree",
+      "review on PayPal"
+    ],
+    "traps": [
+      "records match",
+      "fight on desk",
+      "accept without check"
+    ]
+  }
+}

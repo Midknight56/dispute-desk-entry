@@ -412,7 +412,7 @@ function StudioPage() {
             { id: 'amount', name: 'Amount', format: 'currencyFormat', formatOptions: { format: '$#,##0.00' } },
             {
               id: 'held_amount',
-              name: 'Money on hold',
+              name: 'Open dispute amount',
               format: 'currencyFormat',
               formatOptions: { format: '$#,##0.00' },
             },
@@ -494,7 +494,7 @@ function StudioPage() {
         primary: 'desk',
         promptStarters: [
           { label: 'Disputes by reason this quarter', prompt: 'Disputes by reason this quarter' },
-          { label: 'Money on hold by stage', prompt: 'Money on hold by stage' },
+          { label: 'Open dispute amount by stage', prompt: 'Open dispute amount by stage' },
           { label: 'Status split', prompt: 'Status split' },
         ],
       })),

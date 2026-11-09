@@ -1,6 +1,7 @@
+import type { ReactNode } from 'react';
 import type { FilingConflict, Run } from '../api';
 import { citation, decisionView, filedOutcome } from './caseView';
-import { actionLabel, moneyLine } from '../format';
+import { actionLabel, formatMoney, moneyLine, plainReasons } from '../format';
 
 export function FilingNotice({ id, conflict, busy, check }: { id: string; conflict?: FilingConflict | null; busy: boolean; check: () => void }) {
   return <div role="status">
@@ -98,13 +99,36 @@ export function FiledOutcome({ call }: { call: string }) {
   );
 }
 
-export function DecisionFacts({ run }: { run: Run }) {
+// The recommendation card: verdict and action together, then the evidence it rests on and what is missing or in conflict.
+export function DecisionCard({ run, currency, children }: { run: Run; currency: string; children?: ReactNode }) {
   const view = decisionView(run.decision);
   return (
+    <section className={`decision-card ${view.tone}`} aria-label="Recommendation">
+      <div className={`verdict ${view.tone}`} role="status">
+        <strong>
+          {run.decision.verdict}
+          {run.decision.verdict === 'OFFER' && run.decision.offerAmount != null
+            ? ` ${formatMoney(run.decision.offerAmount, currency)}`
+            : ''}
+        </strong>
+        <p>{run.decision.why}</p>
+      </div>
+      {children}
+      <DecisionFacts run={run} part="summary" />
+    </section>
+  );
+}
+
+export function DecisionFacts({ run, part = 'all' }: { run: Run; part?: 'summary' | 'detail' | 'all' }) {
+  const view = decisionView(run.decision);
+  const policy = view.policy;
+  const summary = part !== 'detail';
+  const detail = part !== 'summary';
+  return (
     <div className="decision-facts">
-      {view.facts.length > 0 && (
+      {summary && view.facts.length > 0 && (
         <section>
-          <h3>Why</h3>
+          <h3>Decisive evidence</h3>
           <dl>
             {view.facts.map((fact, index) => (
               <div key={index}>
@@ -123,7 +147,7 @@ export function DecisionFacts({ run }: { run: Run }) {
           </dl>
         </section>
       )}
-      {view.missing.length > 0 && (
+      {summary && view.missing.length > 0 && (
         <section>
           <h3>Not found</h3>
           <ul>
@@ -133,13 +157,7 @@ export function DecisionFacts({ run }: { run: Run }) {
           </ul>
         </section>
       )}
-      {view.changeIf && (
-        <section>
-          <h3>This would change it</h3>
-          <p>{view.changeIf}</p>
-        </section>
-      )}
-      {view.disagreements.length > 0 && (
+      {summary && view.disagreements.length > 0 && (
         <section>
           <h3>Records that disagree</h3>
           <ul>
@@ -147,6 +165,20 @@ export function DecisionFacts({ run }: { run: Run }) {
               <li key={index}>{value}</li>
             ))}
           </ul>
+        </section>
+      )}
+      {detail && view.changeIf && (
+        <section>
+          <h3>This would change it</h3>
+          <p>{view.changeIf}</p>
+        </section>
+      )}
+      {detail && policy && (
+        <section>
+          <h3>Desk policy</h3>
+          <p>{`Fight line ${policy.fightLine}. Weak cases offer ${policy.offerShare} back.`}</p>
+          <p>{policy.note}</p>
+          <p>{`Handles: ${plainReasons(policy.reasons)}`}</p>
         </section>
       )}
     </div>

@@ -65,7 +65,7 @@ function nodes(tree: any): any[] {
   if (!tree || typeof tree !== 'object') return [];
   if (
     typeof tree.type === 'function' &&
-    ['RunActions', 'LoadNotice', 'FiledOutcome', 'DecisionFacts', 'FilingNotice'].includes(tree.type.name)
+    ['RunActions', 'LoadNotice', 'FiledOutcome', 'DecisionCard', 'DecisionFacts', 'FilingNotice'].includes(tree.type.name)
   )
     return nodes(tree.type(tree.props));
   return [tree, ...[tree.props?.children].flat(Infinity).flatMap(nodes)];

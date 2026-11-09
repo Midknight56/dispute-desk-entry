@@ -1,6 +1,6 @@
 import { afterEach, describe, expect, it, vi } from "vitest";
 import worker from "../src/index";
-import { makeEnv, fakePayPal, ctx } from "./helpers/env";
+import { actionableRoutes, makeEnv, fakePayPal, ctx } from "./helpers/env";
 import { resetTokenMemory } from "../src/token";
 
 const dispute = (over: Record<string, unknown> = {}) => ({
@@ -306,6 +306,7 @@ describe("Worker routes", () => {
     await DB.prepare("INSERT INTO pool (dispute_id,kind,position,added_at) VALUES (?,?,?,?)")
       .bind("PP-2", "fight", 2, "now")
       .run();
+    fakePayPal(actionableRoutes(["PP-1", "PP-2"]));
     const cookies = new Map<string, string>();
     const get = async (ua: string) => {
       const response = await request("/api/judge/next?kind=fight", env, {

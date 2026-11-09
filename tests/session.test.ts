@@ -1,10 +1,10 @@
-import { afterEach, describe, expect, it, vi } from "vitest";
+import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import worker from "../src/index";
 import { session, sessionCookie } from "../src/session";
 import { visitorId, utcDay } from "../src/usage";
 import { store } from "../src/store";
 import { resetTokenMemory } from "../src/token";
-import { ctx, fakePayPal, makeEnv } from "./helpers/env";
+import { actionableRoutes, ctx, fakePayPal, makeEnv } from "./helpers/env";
 
 const id = "PP-SESSION";
 const dispute = {
@@ -57,6 +57,10 @@ async function seed(env: TestEnv) {
       .bind(caseId, "fight", position, "now")
       .run();
 }
+beforeEach(() => {
+  fakePayPal(actionableRoutes([id, "PP-OTHER"]));
+});
+
 afterEach(() => {
   vi.unstubAllGlobals();
   resetTokenMemory();

@@ -229,11 +229,11 @@ describe('initial Studio layout', () => {
     expect(page.widgetLayout.tracking).toEqual({ xTrack: 6, yTrack: 10, xSpan: 6, ySpan: 18 });
   });
 
-  it('keeps KPI titles to ten characters or fewer', () => {
+  it('keeps KPI titles to twenty characters or fewer', () => {
     const page = createInitialLayout().pages[0];
     const titles = (['onHold', 'open', 'settled'] as const).map((id) => page.widgets[id].format.title.text);
-    expect(titles).toEqual(['On hold', 'Open', 'Settled']);
-    for (const title of titles) expect(title.length).toBeLessThanOrEqual(10);
+    expect(titles).toEqual(['Open dispute amount', 'Open', 'Settled']);
+    for (const title of titles) expect(title.length).toBeLessThanOrEqual(20);
   });
 
   it('keeps every widget within 12 columns without overlap', () => {

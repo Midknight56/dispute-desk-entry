@@ -47,6 +47,19 @@ export interface CaseFacts {
   paymentStatus?: string;
 }
 
+export const SUPPORTED_REASONS = [
+  "MERCHANDISE_OR_SERVICE_NOT_RECEIVED",
+  "MERCHANDISE_OR_SERVICE_NOT_AS_DESCRIBED",
+] as const;
+
+export interface DecisionPolicy {
+  fightLine: string;
+  offerShare: string;
+  currency: "USD";
+  reasons: string[];
+  note: string;
+}
+
 export interface Decision {
   verdict: Verdict;
   rule: string;
@@ -56,6 +69,18 @@ export interface Decision {
   changeIf: string;
   disagreements: string[];
   offerAmount?: string;
+  policy?: DecisionPolicy;
+}
+
+export function plainReasons(reasons?: string[]): string {
+  if (!reasons || !reasons.length) return "";
+  return reasons
+    .map((reason) => {
+      if (reason === "MERCHANDISE_OR_SERVICE_NOT_RECEIVED") return "not received";
+      if (reason === "MERCHANDISE_OR_SERVICE_NOT_AS_DESCRIBED") return "not as described";
+      return reason.toLowerCase().replace(/_/g, " ");
+    })
+    .join(", ");
 }
 
 function fractionDigits(currency: string): number {
@@ -101,6 +126,14 @@ function safeAmount(amount: number): number {
 
 export function decide(f: CaseFacts, policy: DeskPolicy = {}): Decision {
   const { fightLine, offerShare } = deskPolicy(policy);
+  const shareText = offerShare === 0.5 ? "half" : `${offerShare * 100} percent`;
+  const decisionPolicy: DecisionPolicy = {
+    fightLine: formatMoney(fightLine, "USD"),
+    offerShare: shareText,
+    currency: "USD",
+    reasons: [...SUPPORTED_REASONS],
+    note: "Set by this desk, not by PayPal. The desk works in USD only.",
+  };
   const amount = safeAmount(f.amount);
   const t = f.tracking;
   const disagreements: string[] = [];
@@ -148,6 +181,7 @@ export function decide(f: CaseFacts, policy: DeskPolicy = {}): Decision {
     disagreements,
     missing: [...absent, ...missing],
     changeIf,
+    policy: decisionPolicy,
   });
   if (!f.hasCapture || f.captureRead === "failed") {
     facts.push({ label: "Payment read", value: "Failed or missing", recordId: f.captureId });
@@ -204,7 +238,7 @@ export function decide(f: CaseFacts, policy: DeskPolicy = {}): Decision {
       [],
     );
   }
-  if (!["MERCHANDISE_OR_SERVICE_NOT_RECEIVED", "MERCHANDISE_OR_SERVICE_NOT_AS_DESCRIBED"].includes(f.reason)) {
+  if (!SUPPORTED_REASONS.includes(f.reason as any)) {
     facts.push({ label: "Reason", value: f.reason.toLowerCase().replace(/_/g, " "), recordId: f.disputeId });
     return review(
       "REASON_NOT_SUPPORTED",
@@ -213,7 +247,6 @@ export function decide(f: CaseFacts, policy: DeskPolicy = {}): Decision {
       [],
     );
   }
-  const shareText = offerShare === 0.5 ? "half" : `${offerShare * 100} percent`;
   const beforeClaim = `A delivery date before ${f.claimAt} would make the desk fight.`;
   const changeIf =
     f.reason === "MERCHANDISE_OR_SERVICE_NOT_RECEIVED"
@@ -239,6 +272,7 @@ export function decide(f: CaseFacts, policy: DeskPolicy = {}): Decision {
         disagreements,
         missing,
         changeIf: `A delivery date after ${f.claimAt} would make the desk offer ${shareText} back.`,
+        policy: decisionPolicy,
       };
     }
   }
@@ -252,6 +286,7 @@ export function decide(f: CaseFacts, policy: DeskPolicy = {}): Decision {
       disagreements,
       missing,
       changeIf: `An amount of ${formatMoney(fightLine, "USD")} or more would make the desk offer ${shareText} back.`,
+      policy: decisionPolicy,
     };
   }
 
@@ -265,6 +300,7 @@ export function decide(f: CaseFacts, policy: DeskPolicy = {}): Decision {
       disagreements,
       missing,
       changeIf,
+      policy: decisionPolicy,
     };
   }
 
@@ -277,6 +313,7 @@ export function decide(f: CaseFacts, policy: DeskPolicy = {}): Decision {
     disagreements,
     missing,
     changeIf,
+    policy: decisionPolicy,
   };
 }
 
@@ -310,6 +347,14 @@ export function dropUnbacked(sentences: unknown, recordIds: Set<string>): { kept
 export function finalDecision(d: Decision, kept: Sentence[], f: CaseFacts, policy: DeskPolicy = {}): Decision {
   const { fightLine, offerShare } = deskPolicy(policy);
   const amount = safeAmount(f.amount);
+  const shareText = offerShare === 0.5 ? "half" : `${offerShare * 100} percent`;
+  const decisionPolicy: DecisionPolicy = {
+    fightLine: formatMoney(fightLine, "USD"),
+    offerShare: shareText,
+    currency: "USD",
+    reasons: [...SUPPORTED_REASONS],
+    note: "Set by this desk, not by PayPal. The desk works in USD only.",
+  };
   if (d.verdict !== "FIGHT" || kept.length > 0) return d;
   if (amount < fightLine) {
     return {
@@ -319,15 +364,17 @@ export function finalDecision(d: Decision, kept: Sentence[], f: CaseFacts, polic
       why: "Not enough evidence to fight this claim, so accept it.",
       missing: [...d.missing, "A kept evidence sentence"],
       changeIf: "A kept sentence backed by the delivery record would make the desk fight.",
+      policy: decisionPolicy,
     };
   }
   return {
     ...d,
     verdict: "OFFER",
     rule: "NOT_ENOUGH_EVIDENCE",
-    why: `Not enough evidence to fight this claim, so offer ${offerShare === 0.5 ? "half" : `${offerShare * 100} percent`} back.`,
+    why: `Not enough evidence to fight this claim, so offer ${shareText} back.`,
     offerAmount: offer(amount, f.currency, offerShare),
     missing: [...d.missing, "A kept evidence sentence"],
     changeIf: "A kept sentence backed by the delivery record would make the desk fight.",
+    policy: decisionPolicy,
   };
 }

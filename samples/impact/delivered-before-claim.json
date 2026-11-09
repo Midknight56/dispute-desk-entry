@@ -1,0 +1,108 @@
+{
+  "id": "PP-D-IMPACT-1",
+  "title": "Delivered before the claim",
+  "records": {
+    "dispute": {
+      "dispute_id": "PP-D-IMPACT-1",
+      "reason": "MERCHANDISE_OR_SERVICE_NOT_RECEIVED",
+      "status": "UNDER_REVIEW",
+      "create_time": "2026-10-23T12:00:00Z",
+      "dispute_amount": {
+        "value": "48.00",
+        "currency_code": "USD"
+      },
+      "disputed_transactions": [
+        {
+          "seller_transaction_id": "CAP-IMPACT-1"
+        }
+      ],
+      "evidences": [
+        {
+          "source": "SUBMITTED_BY_BUYER",
+          "notes": "Item never arrived"
+        }
+      ]
+    },
+    "capture": {
+      "id": "CAP-IMPACT-1",
+      "status": "COMPLETED",
+      "amount": {
+        "value": "48.00",
+        "currency_code": "USD"
+      },
+      "create_time": "2026-10-20T10:00:00Z",
+      "supplementary_data": {
+        "related_ids": {
+          "order_id": "ORD-IMPACT-1"
+        }
+      }
+    },
+    "order": {
+      "id": "ORD-IMPACT-1",
+      "status": "COMPLETED",
+      "purchase_units": [
+        {
+          "description": "Ceramic tea pot",
+          "shipping": {
+            "address": {
+              "admin_area_2": "Toronto",
+              "admin_area_1": "ON",
+              "country_code": "CA"
+            },
+            "trackers": [
+              {
+                "id": "TRK-IMPACT-1"
+              }
+            ]
+          }
+        }
+      ]
+    },
+    "tracker": {
+      "id": "TRK-IMPACT-1",
+      "carrier": "UPS",
+      "tracking_number": "1Z999AA10123456784",
+      "status": "DELIVERED",
+      "delivered_at": "2026-10-22T14:30:00Z"
+    }
+  },
+  "facts": {
+    "disputeId": "PP-D-IMPACT-1",
+    "captureId": "CAP-IMPACT-1",
+    "trackingId": "TRK-IMPACT-1",
+    "reason": "MERCHANDISE_OR_SERVICE_NOT_RECEIVED",
+    "amount": 48.0,
+    "currency": "USD",
+    "claimAt": "2026-10-23T12:00:00Z",
+    "hasCapture": true,
+    "captureRead": "ok",
+    "hasOrder": true,
+    "orderRead": "ok",
+    "trackingRead": "ok",
+    "paymentAmount": 48.0,
+    "paymentCurrency": "USD",
+    "paymentStatus": "COMPLETED",
+    "paypalTrackingStatus": "DELIVERED",
+    "tracking": {
+      "carrier": "UPS",
+      "number": "1Z999AA10123456784",
+      "status": "DELIVERED",
+      "statusSource": "paypal",
+      "deliverySource": "paypal",
+      "deliveredAt": "2026-10-22T14:30:00Z"
+    }
+  },
+  "answer": {
+    "verdict": "FIGHT",
+    "mustFind": [
+      "delivered before claim",
+      "delivered on 2026-10-22",
+      "tracking status DELIVERED"
+    ],
+    "traps": [
+      "package not delivered",
+      "refund buyer",
+      "delivered after claim"
+    ]
+  }
+}

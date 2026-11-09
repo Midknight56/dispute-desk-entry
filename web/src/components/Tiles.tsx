@@ -26,8 +26,8 @@ export default function Tiles({ values, loaded }: { values: TileValues; loaded: 
   return (
     <dl className="tiles" aria-label="Summary">
       <div className="tile">
-        <dt>On hold</dt>
-        <dd>{loaded ? <Count value={values.onHold} money /> : '-'}</dd>
+        <dt>Open dispute amount</dt>
+        <dd>{loaded ? <Count value={values.openAmount} money /> : '-'}</dd>
         {loaded && values.leftOut > 0 && <dd className="tile-text">USD only, {values.leftOut} case{values.leftOut === 1 ? '' : 's'} in another currency left out</dd>}
       </div>
       <div className="tile">
