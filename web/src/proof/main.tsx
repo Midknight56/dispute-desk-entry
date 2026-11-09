@@ -63,7 +63,7 @@ function ProofPage() {
           <section className="proof-part">
             <h2>Verdict rule</h2>
             <p className="proof-count">
-              {proof.verdicts.right} of {proof.verdicts.total} verdicts right
+              {proof.verdicts.right} of {proof.verdicts.total} match the desk's rules
             </p>
             <div className="proof-table" role="table" aria-label="Verdict cases">
               <div className="proof-row proof-head" role="row">
