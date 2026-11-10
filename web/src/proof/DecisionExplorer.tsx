@@ -143,7 +143,7 @@ export default function DecisionExplorer(props: DecisionExplorerProps) {
     <section className="proof-part decision-explorer">
       <h2>One changed fact</h2>
       <p className="decision-subtitle">
-        A hypothetical change on a sample case. Nothing is filed and no model is called.
+        Change one fact and see what the desk would decide. Nothing is filed and no model is called.
       </p>
 
       {error && (
@@ -154,7 +154,7 @@ export default function DecisionExplorer(props: DecisionExplorerProps) {
 
       <div className="decision-controls">
         <div className="decision-control-group">
-          <label htmlFor="decision-case">Sample case</label>
+          <label htmlFor="decision-case">Case</label>
           <select
             id="decision-case"
             value={fixture}

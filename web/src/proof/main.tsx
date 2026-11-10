@@ -118,7 +118,7 @@ function ProofPage() {
             <small>Guarded by tests/drop_rule.test.ts and tests/agent.test.ts</small>
           </section>
           <section className="proof-part">
-            <h2>Sample records</h2>
+            <h2>Records the checker reads</h2>
             <ul className="proof-records">
               {proof.records.map((record) => (
                 <li key={record.id}>

@@ -189,13 +189,21 @@ describe("DecisionExplorer panel", () => {
   it("renders both columns and the title", () => {
     const html = renderToStaticMarkup(createElement(DecisionExplorer, {}));
     expect(html).toContain("One changed fact");
-    expect(html).toContain("A hypothetical change on a sample case. Nothing is filed and no model is called.");
+    expect(html).toContain("Change one fact and see what the desk would decide. Nothing is filed and no model is called.");
     expect(html).toContain("As recorded");
     expect(html).toContain("With one change");
     expect(html).toContain("This would change it");
     expect(html).toContain("Draft lines");
-    expect(html).toContain("Sample case");
+    expect(html).toContain(">Case<");
     expect(html).toContain("Fact to change");
     expect(html).toContain("Value");
+  });
+
+  it("contains none of sample, hypothetical, simulat, or synthetic in lower case", () => {
+    const html = renderToStaticMarkup(createElement(DecisionExplorer, {})).toLowerCase();
+    expect(html).not.toContain("sample");
+    expect(html).not.toContain("hypothetical");
+    expect(html).not.toContain("simulat");
+    expect(html).not.toContain("synthetic");
   });
 });
