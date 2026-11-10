@@ -10,6 +10,18 @@ it came from (a PayPal record or the seller's own shipping record). Nothing is f
 Try it: https://dispute-desk.midknight-labs.workers.dev (the dashboard view is at `/studio`, the measured proof at
 `/proof`). Everything runs on the PayPal sandbox. Built for the PayPal AI Hackathon.
 
+## Judging criteria at a glance
+
+**Technological Implementation.** PayPal Disputes, Orders, Payments, Shipment Tracking and verified Webhooks. The desk files evidence, accepts a claim with a refund, or makes an offer, when PayPal offers that action on the case. AI: Granite 4.0 H Micro on Cloudflare Workers AI suggests records to read and picks facts by id. Code decides the verdict and writes every sentence from known records.
+
+**Design.** Each case shows the facts used, the records not found, any disagreements and what would change the verdict. Nothing is filed until the seller approves. AG Grid, AG Charts and AG Studio show open amounts, deadlines and evidence readiness.
+
+**Potential Impact.** For small PayPal sellers who must gather the payment, the order and the shipping record before a dispute deadline. On 55 live sandbox analyses the desk read a median of 4 records in a median of 1.7 seconds.
+
+**Innovation/Idea.** Every sentence in the reply names its source record, and the evidence pack PDF links each sentence to a lettered exhibit. "One changed fact" lets you change one fact on a case and watch the verdict and the draft move.
+
+**Presentation.** The video runs 2 minutes 17 seconds. Judges get their own live sandbox dispute cases at https://dispute-desk.midknight-labs.workers.dev. The proof page matches the desk's own rules on all 41 labelled cases.
+
 ## Judge in 60 seconds
 
 Open https://dispute-desk.midknight-labs.workers.dev. No login: you are handed live sandbox disputes of your own,
